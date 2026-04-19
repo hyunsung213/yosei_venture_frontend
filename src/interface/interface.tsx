@@ -1,5 +1,6 @@
 interface BaseSchema {
   id: string; // MongoDB의 ID
+  _id?: string; // MongoDB의 _id 필드 호환성
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Mail, Lock, User, Phone, Loader2, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
 import apiClient from '@/api/axiosConfig';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { postLogin, postRegister } from '@/api/login';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { role, userId, login } = useAuth();
@@ -379,5 +379,17 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-yonsei-blue" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

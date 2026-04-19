@@ -6,12 +6,12 @@ import { getApplications } from "@/app/actions/getApplications";
 import { Users, Download } from "lucide-react";
 
 export default function AdminApplicantTable({ programId }: { programId: string }) {
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (role !== 'super') return;
     
     async function fetchDb() {
        setIsLoading(true);
@@ -21,9 +21,9 @@ export default function AdminApplicantTable({ programId }: { programId: string }
     }
     
     fetchDb();
-  }, [isAdmin, programId]);
+  }, [role, programId]);
 
-  if (!isAdmin) return null;
+  if (role !== 'super') return null;
 
   return (
     <div className="mt-16 pt-10 border-t-2 border-red-100">

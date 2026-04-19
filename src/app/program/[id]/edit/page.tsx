@@ -12,7 +12,7 @@ export default function ProgramEditPage() {
   const router = useRouter();
   const params = useParams();
   const programId = params.id as string;
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
@@ -56,7 +56,7 @@ export default function ProgramEditPage() {
     fetchProgram();
   }, [programId]);
 
-  if (!isAdmin) {
+  if (role !== 'super') {
     return (
       <div className="max-w-4xl mx-auto py-20 text-center text-red-600 font-bold">
         <p>관리자 전용 페이지입니다. 관리자 모드를 활성화해주세요.</p>

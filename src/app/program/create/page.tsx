@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProgramCreatePage() {
   const router = useRouter();
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
   const [isPending, setIsPending] = useState(false);
   const [errorPrompt, setErrorPrompt] = useState("");
 
@@ -18,7 +18,7 @@ export default function ProgramCreatePage() {
   const [tagInput, setTagInput] = useState("");
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isAdmin) {
+  if (role !== 'super') {
     return (
       <div className="max-w-4xl mx-auto py-20 text-center text-red-600 font-bold">
         <p>

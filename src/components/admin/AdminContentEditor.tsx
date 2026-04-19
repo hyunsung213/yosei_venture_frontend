@@ -12,7 +12,7 @@ interface AdminContentEditorProps {
 }
 
 export default function AdminContentEditor({ where, initialData, onSuccess }: AdminContentEditorProps) {
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -139,7 +139,7 @@ export default function AdminContentEditor({ where, initialData, onSuccess }: Ad
     });
   };
 
-  if (!isAdmin) return null;
+  if (role !== 'super') return null;
 
   return (
     <div className="mt-16 pt-8 border-t border-gray-200">

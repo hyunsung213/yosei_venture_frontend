@@ -5,9 +5,9 @@ import { Edit } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminEditButton({ programId }: { programId: string }) {
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
 
-  if (!isAdmin) return null;
+  if (role !== 'super') return null;
 
   return (
     <Link 

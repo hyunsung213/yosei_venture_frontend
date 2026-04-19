@@ -7,11 +7,12 @@ import Link from 'next/link';
 import { useAuth } from "@/contexts/AuthContext";
 import { PlusCircle, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Notice } from '@/interface/interface';
 
 export default function NoticePage() {
   const router = useRouter();
-  const [notices, setNotices] = useState<any[]>([]);
-  const { isAdmin } = useAuth();
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const { role } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
@@ -65,7 +66,7 @@ export default function NoticePage() {
 
   return (
     <div className="w-full">
-      {isAdmin && (
+      {role === 'super' && (
         <div className="flex justify-end mb-6">
           <button 
             onClick={() => setIsModalOpen(true)}

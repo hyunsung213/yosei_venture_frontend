@@ -12,13 +12,13 @@ export default function AdminApplicantModal({
   programId: string, 
   variant?: 'full' | 'header' 
 }) {
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin || !isOpen) return;
+    if (role !== 'super' || !isOpen) return;
     
     async function fetchDb() {
        setIsLoading(true);
@@ -34,9 +34,9 @@ export default function AdminApplicantModal({
     }
     
     fetchDb();
-  }, [isAdmin, isOpen, programId]);
+  }, [role, isOpen, programId]);
 
-  if (!isAdmin) return null;
+  if (role !== 'super') return null;
 
   const buttonClass = variant === 'header'
     ? "flex items-center gap-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors shadow-sm border border-red-100"

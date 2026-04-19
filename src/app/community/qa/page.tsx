@@ -12,7 +12,7 @@ export default function QAPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const { role, isAdmin } = useAuth();
+  const { role } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   
@@ -81,7 +81,7 @@ export default function QAPage() {
     }
 
     // 관리자이거나 공개글이면 바로 내용 조회
-    if (isAdmin || qa.isOpen) {
+    if (role === 'super' || qa.isOpen) {
       await fetchDetail(qa._id!);
     } else {
       // 비공개글이면 패스워드 입력 유도

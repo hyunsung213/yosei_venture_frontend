@@ -1,7 +1,7 @@
 import { Program, Rental } from "@/interface/interface";
 import apiClient from "./api";
 
-export async function postRental(data: Omit<Rental, '_id' | 'createdAt' | 'updatedAt'>) {
+export async function postRental(data: Omit<Rental, '_id' | 'id' | 'createdAt' | 'updatedAt'>) {
   try {
     console.group("📡 postRental 전송 데이터");
     console.log(data);
@@ -25,8 +25,9 @@ export async function postProgram(programData: Program) {
   try {
     const response = await apiClient.post(`/program`, programData);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Program을 생성하는 데 실패했습니다!: `, error);
+    return { success: false, message: error?.message || "생성 실패" };
   }
 }
 

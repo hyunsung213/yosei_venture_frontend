@@ -44,7 +44,7 @@ export default function WaveTeamsPage() {
   }, []);
 
   // 현재 카테고리에 속한 타입들 추출
-  const currentTypes = MAIN_CATEGORIES.find(c => c.id === activeCategory)?.types || [];
+  const currentTypes = (MAIN_CATEGORIES.find(c => c.id === activeCategory)?.types as unknown as TeamType[]) || [];
 
   // 필터링 및 그룹화 데이터 생성
   const filteredTeams = teams.filter(team => currentTypes.includes(team.type as TeamType));

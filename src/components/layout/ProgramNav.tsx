@@ -12,7 +12,7 @@ const tabs = [
 
 export default function ProgramNav() {
   const pathname = usePathname();
-  const { isAdmin } = useAuth();
+  const { role } = useAuth();
   
   // Hide on detail pages (/program/[id])
   if (!pathname?.includes('/list') && !pathname?.includes('/calendar')) return null;
