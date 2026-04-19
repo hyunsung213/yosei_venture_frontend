@@ -24,6 +24,7 @@ export default function AdminApplicantModal({
        setIsLoading(true);
        try {
          const apps = await getRegistrationsByProgramId(programId);
+         console.log(apps)
          setData(apps || []);
        } catch (error) {
          console.error("신청 명단 로드 실패:", error);

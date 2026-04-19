@@ -17,7 +17,6 @@ export async function getProgramById(programId: string) {
     const response = await apiClient.get<ProgramForSuper>(
       `/program/${programId}`,
     );
-    console.log(response.data)
     return response.data;
   } catch (error) {
     console.log(`Program ID ${programId}을 가져오는데 실패했습니다!: `, error);
@@ -142,7 +141,12 @@ export async function getRequestById(requestId: string, pw?: string) {
 // 신청 현황 조회 //
 export async function getRegistrationsByProgramId(programId: string) {
   try {
-    const response = await apiClient.get(`/registration/program/${programId}`);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const response = await apiClient.get(`/registration/program/${programId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
     console.log(`Program ID ${programId}의 신청 현황을 가져오는데 실패했습니다!: `, error);

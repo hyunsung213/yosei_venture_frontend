@@ -12,10 +12,12 @@ import { getCleanFileName, getImage } from "@/utils/imageUtils";
 import { ProgramForSuper } from "@/interface/interface";
 import { getProgramById } from "@/api/get";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProgramDetailPage() {
   const params = useParams();
   const programId = params.id as string;
+  const { userId } = useAuth();
 
   const [program, setProgram] = useState<ProgramForSuper | null>(null);
   const [loading, setLoading] = useState(true);
