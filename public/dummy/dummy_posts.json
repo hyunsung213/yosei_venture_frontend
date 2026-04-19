@@ -1,0 +1,38 @@
+[
+  {
+    "_id": "post001",
+    "type": "notice",
+    "board_category": "external",
+    "title": "2026 연세 창업경진대회 개최 안내",
+    "content": "총 상금 5천만원! 여러분의 혁신적인 아이디어를 기다립니다.",
+    "author": "관리자",
+    "createdAt": "2026-04-10T09:00:00Z"
+  },
+  {
+    "_id": "post002",
+    "type": "notice",
+    "board_category": "internal",
+    "title": "[입주기업 전용] 4월 네트워킹 데이 안내",
+    "content": "입주기업 간 협력을 위한 네트워킹 데이가 4월 마지막 주 금요일에 진행됩니다.",
+    "author": "WAVE 운영진",
+    "createdAt": "2026-04-12T10:00:00Z"
+  },
+  {
+    "_id": "post003",
+    "type": "press",
+    "title": "연세대 창업지원단, '글로벌 딥테크 유니콘' 배출 위한 시동",
+    "content": "강원권 최초로 글로벌 창업허브로 선정된 연세대학교 미래캠퍼스...",
+    "thumbnail_url": "/image/default_thumbnail.jpg",
+    "press_name": "연세일보",
+    "createdAt": "2026-04-14T08:30:00Z"
+  },
+  {
+    "_id": "post004",
+    "type": "qa",
+    "title": "시설 대관 관련 문의드립니다.",
+    "content": "주말에도 코워킹 스페이스를 이용할 수 있나요?",
+    "author": "홍길동",
+    "status": "answered",
+    "createdAt": "2026-04-15T15:20:00Z"
+  }
+]
