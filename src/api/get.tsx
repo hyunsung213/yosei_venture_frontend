@@ -249,3 +249,22 @@ export async function getAllTeamsWithStatus() {
     console.log("팀 상태 목록을 가져오는데 실패했습니다!: ", error);
   }
 }
+
+// 대관 조회
+export async function getRentalsByPlaceId(placeId: string) {
+  try {
+    const response = await apiClient.get(`/rental/place/${placeId}`);
+    return response.data;
+  } catch (error) {
+    console.log(`Place ID ${placeId}의 대관 목록 조회 실패!: `, error);
+  }
+}
+
+export async function checkUserRental(placeId: string) {
+  try {
+    const response = await apiClient.get(`/rental/check/${placeId}`);
+    return response.data;
+  } catch (error) {
+    console.log(`사용자 대관 내역 확인 실패!: `, error);
+  }
+}

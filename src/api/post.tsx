@@ -65,3 +65,12 @@ export async function postTeam(data: any) {
     return { success: false, message: error?.response?.data?.message || "팀 생성 실패" };
   }
 }
+
+export async function postRental(data: any) {
+  try {
+    const response = await apiClient.post(`/rental`, data);
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    return { success: false, message: error?.response?.data?.message || "대관 신청 실패" };
+  }
+}

@@ -59,6 +59,15 @@ export interface Place extends BaseSchema {
   imgs: string[];
 }
 
+export interface Rental extends BaseSchema {
+  placeId: string;
+  userId: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  purpose: string;
+}
+
 export interface INotice {
   title: string;
   content: string;
@@ -300,7 +309,7 @@ export interface UsagePlan {
   teamName: string;
   balance: number;
   canEdit: boolean;
-  status: StatusType;
+  status: PlanStatusType;
   submittedAt: string;
   comment: string;
   items: IUsagePlanItem[];
@@ -310,6 +319,6 @@ export interface UsagePlanSimple {
   teamId: string;
   teamName: string;
   submittedAt: string;
-  status: StatusType | string;
+  status: PlanStatusType | string;
   totalAmount: number;
 }
