@@ -111,7 +111,7 @@ function LoginContent() {
       pwd: regPwd,
       isSocial: false,
       isStudent: isStudent,
-      studentId: isStudent ? regStudentId : undefined,
+      studentId: regStudentId,
       type: 'general',
     }
 

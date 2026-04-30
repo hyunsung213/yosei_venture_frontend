@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllNews } from '@/api/get';
 import { postNews } from '@/api/post';
-import { News } from '@/interface/interface';
+import { INews, News } from '@/interface/interface';
 import { getImage } from '@/utils/imageUtils';
 
 export default function PressPage() {

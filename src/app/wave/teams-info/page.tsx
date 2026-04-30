@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Team, TeamType } from '@/interface/interface';
+import { Team, TeamSimple, TeamType } from '@/interface/interface';
 import { getAllTeams } from '@/api/get';
 import { Loader2, Users, Building, ExternalLink } from 'lucide-react';
 import { getImage } from '@/utils/imageUtils';
@@ -24,7 +24,7 @@ const MAIN_CATEGORIES = [
 type CategoryId = typeof MAIN_CATEGORIES[number]['id'];
 
 export default function WaveTeamsPage() {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<TeamSimple[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<CategoryId>('LAB');
 
@@ -53,7 +53,7 @@ export default function WaveTeamsPage() {
     if (!acc[type]) acc[type] = [];
     acc[type].push(team);
     return acc;
-  }, {} as Record<string, Team[]>);
+  }, {} as Record<string, TeamSimple[]>);
 
   if (loading) {
     return (

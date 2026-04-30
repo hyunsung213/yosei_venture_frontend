@@ -8,7 +8,7 @@ import apiClient from "./axiosConfig";
 
 export async function getGreetings() {
   try {
-    const response = await apiClient.get('/etc/name?where=greetings');
+    const response = await apiClient.get('/etc/greetings');
     // 백엔드가 배열로 응답하는지 단일 객체로 응답하는지에 따라 유연하게 대응
     const item = Array.isArray(response.data) ? response.data[0] : response.data;
     return item?.data || item;
@@ -20,7 +20,7 @@ export async function getGreetings() {
 
 export async function getMissionVision() {
   try {
-    const response = await apiClient.get('/etc/name?where=missionVision');
+    const response = await apiClient.get('/etc/missionVision');
     const item = Array.isArray(response.data) ? response.data[0] : response.data;
     return item?.data || item;
   } catch (error) {
@@ -31,7 +31,7 @@ export async function getMissionVision() {
 
 export async function getHistory() {
   try {
-    const response = await apiClient.get('/etc/name?where=history');
+    const response = await apiClient.get('/etc/history');
     const item = Array.isArray(response.data) ? response.data[0] : response.data;
     return item?.data || item;
   } catch (error) {
@@ -42,7 +42,7 @@ export async function getHistory() {
 
 export async function getOrganization() {
   try {
-    const response = await apiClient.get('/etc/name?where=organization');
+    const response = await apiClient.get('/etc/organization');
     const item = Array.isArray(response.data) ? response.data[0] : response.data;
     return item?.data || item;
   } catch (error) {
@@ -53,7 +53,7 @@ export async function getOrganization() {
 
 export async function getAddressInfo() {
   try {
-    const response = await apiClient.get('/etc/name?where=addressInfo');
+    const response = await apiClient.get('/etc/addressInfo');
     const item = Array.isArray(response.data) ? response.data[0] : response.data;
     return item?.data || item;
   } catch (error) {
@@ -64,7 +64,7 @@ export async function getAddressInfo() {
 
 export async function getPhone() {
   try {
-    const response = await apiClient.get('/etc/name?where=phone');
+    const response = await apiClient.get('/etc/phone');
     const item = Array.isArray(response.data) ? response.data[0] : response.data;
     return item?.data || item;
   } catch (error) {

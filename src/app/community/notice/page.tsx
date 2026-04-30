@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllNotices } from '@/api/get';
 import { postNotice } from '@/api/post';
 import Link from 'next/link';
 import { useAuth } from "@/contexts/AuthContext";
 import { PlusCircle, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Notice } from '@/interface/interface';
+import { getCommunityNotices } from '@/api/get';
 
 export default function NoticePage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function NoticePage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getAllNotices();
+        const data = await getCommunityNotices();
         setNotices(data ?? []);
       } catch (error) {
         console.error(error);
@@ -158,10 +158,10 @@ export default function NoticePage() {
             <tbody className="divide-y divide-gray-100">
               {notices.length > 0 ? (
                 notices.map((nt, idx) => (
-                  <tr key={nt._id || idx} className="hover:bg-gray-50 transition-colors">
+                  <tr key={nt.id || idx} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-center text-gray-400 font-medium">{notices.length - idx}</td>
                     <td className="px-6 py-4">
-                      <Link href={`/community/notice/${nt._id}`} className="font-bold text-gray-900 hover:text-yonsei-blue transition-colors block truncate w-full max-w-lg mx-auto text-center">
+                      <Link href={`/community/notice/${nt.id}`} className="font-bold text-gray-900 hover:text-yonsei-blue transition-colors block truncate w-full max-w-lg mx-auto text-center">
                         {nt.title}
                       </Link>
                     </td>

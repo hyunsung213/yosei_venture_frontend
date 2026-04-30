@@ -50,9 +50,9 @@ export default function FacilityPage() {
       {!loading && !error && places.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {places.map((place, index) => {
-            const placeId = place._id ?? (place as any).id ?? String(index);
+            const placeId = place.id;
             
-            const imageUrl = (place as any).image ?? (place.img?.length > 0 ? place.img : null);
+            const imageUrl = place.imgs[0];
             const viewImage = imageUrl ? getImage(imageUrl) : '/image/yonsei_logo.png';
 
             return (

@@ -42,10 +42,10 @@ export default function Header() {
 
   const waveLinks = [
     { name: "사업개요", href: "/wave/about" },
-    { name: "팀 소개", href: "/wave/teams" },
+    { name: "팀 소개", href: "/wave/teams-info" },
     { name: "공지사항", href: "/wave/notice" },
-    { name: "처리 요청", href: "/wave/request" },
     { name: "Q&A", href: "/wave/qa" },
+    { name: "팀 관리", href: "/wave/team" },
   ];
 
   const communityLinks = [
@@ -137,6 +137,11 @@ export default function Header() {
             {renderDropdown("프로그램", isProgramActive, programLinks)}
             {renderDropdown("WAVE-LAB", isWaveActive, waveLinks)}
             {renderDropdown("커뮤니티", isCommunityActive, communityLinks)}
+            {role === 'super' && (
+              <Link href="/dashboard" className={`text-sm font-bold transition-colors ${pathname.startsWith('/dashboard') ? 'text-red-600' : 'text-gray-700 hover:text-red-600'}`}>
+                관리자 대시보드
+              </Link>
+            )}
 
             {/* Role Toggle Dropdown (For Debug / Development) */}
             <div className="relative group flex items-center ml-4">

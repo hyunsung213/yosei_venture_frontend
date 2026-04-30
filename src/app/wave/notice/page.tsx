@@ -1,20 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllNotices } from '@/api/get';
 import Link from 'next/link';
 import { useAuth } from "@/contexts/AuthContext";
 import { PlusCircle, X } from 'lucide-react';
+import { getWaveNotices } from '@/api/get';
+import { Notice } from '@/interface/interface';
 
 export default function WaveNoticePage() {
   const { role } = useAuth();
-  const [notices, setNotices] = useState<any[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await getAllNotices();
+        const data = await getWaveNotices();
         setNotices(data ?? []);
       } catch (error) {
         console.error(error);
@@ -89,10 +90,10 @@ export default function WaveNoticePage() {
             <tbody className="divide-y divide-gray-100">
               {notices.length > 0 ? (
                 notices.map((nt, idx) => (
-                  <tr key={nt._id || idx} className="hover:bg-gray-50 transition-colors">
+                  <tr key={nt.id || idx} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-center text-gray-400 font-medium">{notices.length - idx}</td>
                     <td className="px-6 py-4">
-                      <Link href={`/wave/notice/${nt._id}`} className="font-bold text-gray-900 hover:text-yonsei-blue transition-colors block truncate w-full max-w-lg mx-auto text-center">
+                      <Link href={`/wave/notice/${nt.id}`} className="font-bold text-gray-900 hover:text-yonsei-blue transition-colors block truncate w-full max-w-lg mx-auto text-center">
                         {nt.title}
                       </Link>
                     </td>

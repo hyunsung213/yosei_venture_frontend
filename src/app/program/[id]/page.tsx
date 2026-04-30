@@ -3,23 +3,21 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import ApplicationModal from "@/components/program/ApplicationModal";
 import AdminApplicantModal from "@/components/program/AdminApplicantModal";
 import AdminEditButton from "@/components/program/AdminEditButton";
 import Link from "next/link";
 import { ArrowLeft, Loader2, FileText, Download, ChevronDown } from "lucide-react";
 import { getCleanFileName, getImage } from "@/utils/imageUtils";
-import { ProgramForSuper } from "@/interface/interface";
 import { getProgramById } from "@/api/get";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { Program } from "@/interface/interface";
 
 export default function ProgramDetailPage() {
   const params = useParams();
   const programId = params.id as string;
-  const { userId } = useAuth();
 
-  const [program, setProgram] = useState<ProgramForSuper | null>(null);
+  const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -130,25 +128,12 @@ export default function ProgramDetailPage() {
               <span className="text-xl font-black text-gray-900">{program.capacity}명</span>
             </div>
             <div className="w-px h-8 bg-yonsei-blue/20" />
-            <div className="text-center md:text-left">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter block mb-1">확정 인원</span>
-              <span className="text-xl font-black text-yonsei-blue">{program.registrationCount ?? 0}명</span>
-            </div>
-            {program.pendingRegistrationCount !== undefined && (
-              <>
-                <div className="w-px h-8 bg-yonsei-blue/20" />
-                <div className="text-center md:text-left">
-                  <span className="text-xs font-bold text-red-500 uppercase tracking-tighter block mb-1">검토 중</span>
-                  <span className="text-xl font-black text-red-600">{program.pendingRegistrationCount}명</span>
-                </div>
-              </>
-            )}
           </div>
           
           {program.hashTags && (
             <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0">
-              {program.hashTags.map((tag, i) => (
-                <span key={i} className="bg-white text-gray-500 text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+              {program.hashTags.split('#').filter(Boolean).map((tag, idx) => (
+                <span key={idx} className="bg-yonsei-blue/10 text-yonsei-blue text-xs font-bold px-3 py-1 rounded-full border border-yonsei-blue/20">
                   #{tag.trim()}
                 </span>
               ))}
@@ -277,24 +262,7 @@ export default function ProgramDetailPage() {
           </div>
         )}
       </section>
-
-      {/* ──────────────────────────────────────────────────────────
-          Section 3: Bottom (Action)
-          ────────────────────────────────────────────────────────── */}
-      <section className="mt-16 pt-10 border-t border-gray-100 flex flex-col items-center gap-8">
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4 w-full md:w-auto">
-          {isActive ? (
-            <div className="w-full md:w-[400px] flex justify-center">
-              <ApplicationModal programId={programId} programTitle={program.title} />
-            </div>
-          ) : (
-            <button disabled className="w-full md:w-[400px] px-16 py-5 rounded-full font-bold text-xl transition-colors bg-gray-200 text-gray-500 cursor-not-allowed">
-              모집이 마감되었습니다
-            </button>
-          )}
-        </div>
-      </section>
-
+    
     </div>
   );
 }

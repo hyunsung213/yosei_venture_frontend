@@ -18,10 +18,48 @@ export default function WaveAboutPage() {
   const [data, setData] = useState<{ roadmap: any[]; infrastructure: any[] } | null>(null);
 
   useEffect(() => {
-    fetch('/dummy/wave_about.json')
-      .then(res => res.json())
-      .then(json => setData(json))
-      .catch(err => console.error(err));
+    // 하드코딩된 소개 데이터 삽입
+    setData({
+      roadmap: [
+        {
+          step: "Idea",
+          title: "아이디어 발굴",
+          description: "창의적인 아이디어를 구체화하고 실현 가능한 비즈니스 모델을 설계합니다."
+        },
+        {
+          step: "Incubating",
+          title: "실전 창업 및 멘토링",
+          description: "전문가 멘토링을 통해 사업의 타당성을 검증하고 시제품을 제작합니다."
+        },
+        {
+          step: "Scale-up",
+          title: "투자 유치 및 스케일업",
+          description: "실전 IR 피칭 및 후속 지원을 통해 벤처 투자를 유치하고 성장을 가속합니다."
+        }
+      ],
+      infrastructure: [
+        {
+          icon: "Building2",
+          title: "혁신 창업 공간 (Space)",
+          description: "예비 창업자와 팀을 위한 최신 시설의 코워킹 스페이스 및 프라이빗 미팅룸을 지원합니다."
+        },
+        {
+          icon: "Users",
+          title: "전문가 풀 (Mentors)",
+          description: "분야별 최상위 전문가와의 1:1 매칭 멘토링을 통해 비즈니스 난제를 해결합니다."
+        },
+        {
+          icon: "FolderOpen",
+          title: "실무 교육 (Programs)",
+          description: "이론을 넘어선 실무 중심의 창업 교육을 통해 핵심 창업 역량을 근본적으로 강화합니다."
+        },
+        {
+          icon: "LineChart",
+          title: "투자 연계 (Funding)",
+          description: "우수 창업팀에게는 엔젤 및 시드 투자를 비롯한 다양한 후속 벤처 투자 기회를 연결합니다."
+        }
+      ]
+    });
   }, []);
 
   const isMember = role !== 'guest';

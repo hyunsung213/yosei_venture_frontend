@@ -1,0 +1,12 @@
+{
+  "greetings": { "quote": "", "paragraphs": [], "director": "", "signatureText": "" },
+  "missionVision": { "title": "", "subtitle": "", "cards": [] },
+  "history": [],
+  "organization": { 
+    "manager": { "name": "", "role": "", "ext": "" }, 
+    "staffs": [], 
+    "support": { "name": "", "role": "", "ext": "" } 
+  },
+  "addressInfo": { "main_address": "", "sub_address": "" },
+  "phone": ""
+}

@@ -65,7 +65,7 @@ export default function PlaceListingPage() {
         {!loading && !error && places.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {places.map((place, index) => {
-              const placeId = place._id ?? (place as any).id ?? String(index);
+              const placeId = place.id ?? (place as any).id ?? String(index);
 
               return (
                 <Link
@@ -75,7 +75,7 @@ export default function PlaceListingPage() {
                 >
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
                     <Image
-                      src={place.img || "/image/yonsei_logo.png"}
+                      src={place.imgs[0] || "/image/yonsei_logo.png"}
                       alt={place.name}
                       fill
                       unoptimized

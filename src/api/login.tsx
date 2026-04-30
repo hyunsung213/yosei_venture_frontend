@@ -17,6 +17,7 @@ export async function postRegister(regData: IUser) {
 export async function postLogin(loginData: ILogin) {
 try{
     const res = await apiClient.post('/auth/login', loginData);
+    localStorage.setItem('token', res.data.token);
     alert('로그인 되었습니다.');
   return res;
   } catch (err: any) {

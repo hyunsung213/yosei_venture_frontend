@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronRight, ExternalLink, Globe, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getAllTeams, getAllNotices } from "@/api/get";
-import { Team, Notice } from "@/interface/interface";
+import { Team, Notice, TeamSimple } from "@/interface/interface";
 import { getImage } from "@/utils/imageUtils";
+import { getAllTeams, getCommunityNotices, getWaveNotices } from "@/api/get";
 
 const typeLabels: Record<string, string> = {
   innovative: "혁신창업",
@@ -18,7 +18,7 @@ const typeLabels: Record<string, string> = {
 
 export default function ArchiveSection() {
   const [activeTab, setActiveTab] = useState<'wave' | 'community'>('wave');
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<TeamSimple[]>([]);
   const [waveNotices, setWaveNotices] = useState<Notice[]>([]);
   const [communityNotices, setCommunityNotices] = useState<Notice[]>([]);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
@@ -38,11 +38,12 @@ export default function ArchiveSection() {
       const allTeams = await getAllTeams();
       if (allTeams) setTeams(allTeams);
 
-      const allNotices = await getAllNotices();
-      if (allNotices) {
-        setWaveNotices(allNotices.filter((n: any) => n.isWave));
-        setCommunityNotices(allNotices.filter((n: any) => !n.isWave));
-      }
+      const waveNotices = await getWaveNotices();
+      if (waveNotices) setWaveNotices(waveNotices);
+
+      const communityNotices = await getCommunityNotices();
+      if (communityNotices) setCommunityNotices(communityNotices);
+
     }
     fetchData();
   }, []);

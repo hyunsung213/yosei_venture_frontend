@@ -2,10 +2,10 @@
 
 import { useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { postProgramForm } from "@/api/post";
 import { ArrowLeft, Save, LayoutTemplate, X } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { postProgram } from "@/api/post";
 
 export default function ProgramCreatePage() {
   const router = useRouter();
@@ -82,8 +82,9 @@ export default function ProgramCreatePage() {
       formData.append("capacity", capacityInput.value);
     }
 
-    // HashTag: "#" 없이 "," 로 구분된 하나의 string으로 전달
-    formData.append("hashTags", tags.join(","));
+    // HashTag: #으로 구분된 하나의 string으로 전달
+    const hashTagsString = tags.length > 0 ? "#" + tags.join("#") : "";
+    formData.append("hashTags", hashTagsString);
 
     // Poster image (single file)
     const posterInput = form.elements.namedItem("poster") as HTMLInputElement;
@@ -105,7 +106,7 @@ export default function ProgramCreatePage() {
     }
     console.groupEnd();
 
-    const res = await postProgramForm(formData);
+    const res = await postProgram(formData);
 
     setIsPending(false);
     if (res.success) {
@@ -124,7 +125,7 @@ export default function ProgramCreatePage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 mt-12 md:mt-16">
       <Link
-        href="/program/sub_1"
+        href="/program/list"
         className="inline-flex items-center gap-2 text-gray-500 hover:text-yonsei-blue transition-colors font-medium mb-6"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -234,25 +235,7 @@ export default function ProgramCreatePage() {
                   ref={tagInputRef}
                   type="text"
                   value={tagInput}
-                  onChange={(e) => {
-                    let v = e.target.value;
-                    if (v.includes(" ")) {
-                      const newTags = v.split(" ").map(s => s.replace(/#/g, "").trim()).filter(Boolean);
-                      if (newTags.length > 0) {
-                        setTags(prev => {
-                          const toAdd = newTags.filter(t => !prev.includes(t));
-                          return [...prev, ...toAdd];
-                        });
-                      }
-                      setTagInput("");
-                      return;
-                    }
-                    // 자동으로 # 앞에 붙여주기
-                    if (v && !v.startsWith("#")) {
-                      v = "#" + v;
-                    }
-                    setTagInput(v);
-                  }}
+                  onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleTagKeyDown}
                   onBlur={commitTag}
                   placeholder={tags.length === 0 ? "#창업 #스타트업 #연세대..." : ""}
@@ -262,7 +245,7 @@ export default function ProgramCreatePage() {
 
               {tags.length > 0 && (
                 <p className="text-[11px] text-gray-400 mt-1.5">
-                  전송 값: <span className="font-mono text-gray-500">{tags.join(",")}</span>
+                  전송 값: <span className="font-mono text-gray-500">#{tags.join("#")}</span>
                 </p>
               )}
             </div>

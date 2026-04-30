@@ -20,7 +20,7 @@ export async function putProgramForm(programId: string, formData: FormData) {
 
 export async function putEtcData(where: string, data: any) {
   try {
-    const response = await apiClient.put(`/etc/name?where=${where}`, data, {
+    const response = await apiClient.put(`/etc/${where}`, data, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -48,5 +48,31 @@ export async function putRequestStatus(requestId: string, data: { state: string 
     return { success: true, data: response.data };
   } catch (error: any) {
     return { success: false, message: error?.response?.data?.message || "상태 변경 실패" };
+  }
+}
+
+export async function putUsage(usageId: string, data: any) {
+  try {
+    const isFormData = data instanceof FormData;
+    const response = await apiClient.put(`/usage/${usageId}`, data, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : { "Content-Type": "application/json" },
+    });
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error(`Usage 수정 실패 (ID: ${usageId}): `, error);
+    const message = error?.response?.data?.message || error?.message || "알 수 없는 오류가 발생했습니다.";
+    return { success: false, message };
+  }
+}
+
+export async function putPlan(planId: string, data: any) {
+  try {
+    const isFormData = data instanceof FormData;
+    const response = await apiClient.put(`/plan/${planId}`, data, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : { "Content-Type": "application/json" },
+    });
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    return { success: false, message: error?.response?.data?.message || "Plan 수정 실패" };
   }
 }

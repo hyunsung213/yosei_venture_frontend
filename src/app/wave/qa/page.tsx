@@ -1,6 +1,5 @@
 'use client';
 
-import { getAllWaveQAs, getQAById } from '@/api/get';
 import { postQA } from '@/api/post';
 import { ChevronDown, ChevronUp, MessageSquarePlus, X, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +7,7 @@ import { Qa } from '@/interface/interface';
 import { useEffect, useState } from 'react';
 import { redirect, useRouter } from 'next/navigation';
 import { ShieldAlert } from 'lucide-react';
+import { getQAById, getWaveQAs } from '@/api/get';
 
 export default function WaveQAPage() {
   const [qas, setQas] = useState<Qa[]>([]);
@@ -27,13 +27,13 @@ export default function WaveQAPage() {
   // Private Access State
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [targetId, setTargetId] = useState<string | null>(null);
-  const [accessPassword, setAccessPassword] = useState("");
+  const [accessPassword, setAccessPassword] = useState("0000");
   const [isAccessing, setIsAccessing] = useState(false);
 
   async function load() {
     setLoading(true);
     try {
-      const data = await getAllWaveQAs();
+      const data = await getWaveQAs();
       setQas(data ?? []);
     } catch (error) {
       console.error(error);
@@ -80,30 +80,35 @@ export default function WaveQAPage() {
   };
 
   const handleToggleOpen = async (qa: Qa) => {
-    const isCurrentlyOpen = openId === qa._id;
+    const isCurrentlyOpen = openId === qa.id;
     if (isCurrentlyOpen) {
       setOpenId(null);
       return;
     }
 
     if (role === 'wave' || role === 'super' || qa.isOpen) {
-      await fetchDetail(qa._id!);
+      await fetchDetail(qa.id!);
     } else {
-      setTargetId(qa._id!);
+      setTargetId(qa.id!);
       setShowPasswordPrompt(true);
     }
   };
 
-  const fetchDetail = async (id: string, pw?: string) => {
+  const fetchDetail = async (id: string, password?: string) => {
     setIsAccessing(true);
-    const data = await getQAById(id, pw);
+    if (password) {
+      setAccessPassword(password);
+    }
+    const data = await getQAById(id);
     setIsAccessing(false);
 
     if (data) {
-      setQas(prev => prev.map(item => item._id === id ? { ...item, content: data.content } : item));
+      setQas(prev => prev.map(item => item.id === id ? { ...item, content: data.content } : item));
       setOpenId(id);
-      setShowPasswordPrompt(false);
-      setAccessPassword("");
+      if (data.pwd == accessPassword) {
+        setShowPasswordPrompt(false);
+      }
+      else alert("비밀번호가 틀렸습니다.");
     } else {
       alert("접근 권한이 없거나 비밀번호가 틀렸습니다.");
     }
@@ -302,9 +307,9 @@ export default function WaveQAPage() {
         {qas.length > 0 ? (
           <div className="space-y-4">
             {qas.map((qa, idx) => {
-               const isOpen = openId === qa._id;
+               const isOpen = openId === qa.id;
                return (
-                 <div key={qa._id || idx} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-300">
+                 <div key={qa.id || idx} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-300">
                    <button 
                      onClick={() => handleToggleOpen(qa)}
                      className={`w-full flex items-center justify-between p-5 text-left transition-colors ${isOpen ? 'bg-blue-50/50' : 'bg-white hover:bg-gray-50'}`}
@@ -314,7 +319,7 @@ export default function WaveQAPage() {
                        <div className="flex items-center gap-2">
                          {!qa.isOpen && <Lock className="w-3.5 h-3.5 text-gray-400" />}
                          <span className="font-bold text-gray-900">{qa.title}</span>
-                         {qa.state === 'completed' && (
+                         {qa.status === 'approved' && (
                            <span className="bg-green-100 text-green-700 text-[10px] px-1.5 py-0.5 rounded font-black">답변완료</span>
                          )}
                        </div>

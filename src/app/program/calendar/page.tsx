@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { getAllPrograms } from '@/api/get';
-import { ProgramForSuper } from '@/interface/interface';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { ProgramSimple } from '@/interface/interface';
 
 const PASTEL_COLORS = [
   'bg-red-100 text-red-700 border-red-200 hover:bg-red-200',
@@ -17,7 +17,7 @@ const PASTEL_COLORS = [
 ];
 
 export default function CalendarPage() {
-  const [programs, setPrograms] = useState<ProgramForSuper[]>([]);
+  const [programs, setPrograms] = useState<ProgramSimple[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
 
@@ -148,7 +148,7 @@ export default function CalendarPage() {
                   
                   <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden pt-1 w-[calc(100%+16px)] -ml-2">
                     {dayPrograms.map((prog, idx) => {
-                      const programId = prog._id || (prog as any).id || `idx-${idx}`;
+                      const programId = prog.id || (prog as any).id || `idx-${idx}`;
                       const colorClass = PASTEL_COLORS[(typeof programId === 'string' ? programId.charCodeAt(0) : idx) % PASTEL_COLORS.length];
                       
                       const currentCell = new Date(year, month, day);

@@ -42,7 +42,7 @@ export default function ProgramEditPage() {
           if (data.endDate) setEndDate(new Date(data.endDate).toISOString().split('T')[0]);
           setContent(data.content);
           if (data.hashTags) {
-            setTags(data.hashTags);
+            setTags(data.hashTags.split("#").filter(Boolean));
           }
         }
       } catch (err) {
@@ -109,7 +109,8 @@ export default function ProgramEditPage() {
     formData.append("start_date", startDate);
     formData.append("end_date", endDate);
     formData.append("content", content);
-    formData.append("hash_tag", tags.join(","));
+    const hashTagsString = tags.length > 0 ? "#" + tags.join("#") : "";
+    formData.append("hashTags", hashTagsString);
 
     // Files
     const form = e.currentTarget;

@@ -5,12 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Users, Loader2, ServerOff, Calendar, PlusCircle, X } from 'lucide-react';
 import { getAllPrograms } from '@/api/get';
-import { ProgramForSuper } from '@/interface/interface';
 import { getImage } from '@/utils/imageUtils';
 import { useAuth } from "@/contexts/AuthContext";
+import { ProgramSimple } from '@/interface/interface';
 
 export default function ProgramListPage() {
-  const [programs, setPrograms] = useState<ProgramForSuper[]>([]);
+  const [programs, setPrograms] = useState<ProgramSimple[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { role } = useAuth();
@@ -126,7 +126,7 @@ export default function ProgramListPage() {
                 </div>
 
                 <div className="p-6 md:p-8 flex flex-col justify-center flex-1 h-full overflow-hidden">
-                  <span className="text-xs font-bold text-yonsei-blue mb-3 block truncate">{prog.hashTags?.join(" ")}</span>
+                  <span className="text-xs font-bold text-yonsei-blue mb-3 block truncate">{prog.hashTags}</span>
                   <h2 className="text-lg md:text-2xl font-bold text-gray-900 leading-snug group-hover:text-yonsei-blue transition-colors mb-4 line-clamp-3">
                     {prog.title}
                   </h2>

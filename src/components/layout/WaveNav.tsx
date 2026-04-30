@@ -2,19 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
-const tabs = [
+const baseTabs = [
   { name: "사업개요", href: "/wave/about" },
-  { name: "팀 소개", href: "/wave/teams" },
+  { name: "팀 소개", href: "/wave/teams-info" },
   { name: "공지사항", href: "/wave/notice" },
-  { name: "처리 요청", href: "/wave/request" },
   { name: "Q&A", href: "/wave/qa" },
+  { name: "팀 관리", href: "/wave/team" },
+];
+
+const waveTabs = [
+  { name: "사업개요", href: "/wave/about" },
+  { name: "팀 소개", href: "/wave/teams-info" },
+  { name: "공지사항", href: "/wave/notice" },
+  { name: "Q&A", href: "/wave/qa" },
+  { name: "팀 관리", href: "/wave/team" },
 ];
 
 export default function WaveNav() {
   const pathname = usePathname();
+  const { role } = useAuth();
 
-  const currentTab = tabs.find(tab => pathname?.startsWith(tab.href)) || tabs[0];
+  const tabs = (role === 'wave' || role === 'super') ? waveTabs : baseTabs;
+
+  const currentTab = tabs.find(tab => pathname === tab.href || pathname?.startsWith(tab.href + '/')) || tabs[0];
 
   return (
     <div className="w-full bg-transparent pt-12 pb-4 border-b border-gray-200 mb-8">
@@ -28,7 +40,7 @@ export default function WaveNav() {
         {/* Horizontal Sub-Navigation - Center Aligned */}
         <nav className="flex space-x-2 sm:space-x-4 overflow-x-auto pb-2 scrollbar-hide justify-center w-full">
           {tabs.map((tab) => {
-            const isActive = pathname === tab.href || pathname?.startsWith(tab.href);
+            const isActive = pathname === tab.href || pathname?.startsWith(tab.href + '/');
             return (
               <Link
                 key={tab.name}

@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { getAllPrograms } from "@/api/get";
-import { ProgramForSuper } from "@/interface/interface";
 import { motion, useAnimationControls } from "framer-motion";
 import { getImage } from "@/utils/imageUtils";
 

@@ -1,11 +1,11 @@
-import { Place, Program, ProgramForSuper, Rental } from "@/interface/interface";
+import { Etc, News, Notice, Place, Program, ProgramSimple, Qa, Team, TeamSimple, TeamWithPlan, TeamWithPlanStatus, UserSoSimple } from "@/interface/interface";
 import apiClient from "./api";
 
 // 프로그램 조회 //
 export async function getAllPrograms() {
   try {
     const response =
-      await apiClient.get<ProgramForSuper[]>(`/program`);
+      await apiClient.get<ProgramSimple[]>(`/program`);
     return response.data;
   } catch (error) {
     console.log("모든 Program을 가져오는데 실패했습니다!: ", error);
@@ -14,7 +14,7 @@ export async function getAllPrograms() {
 
 export async function getProgramById(programId: string) {
   try {
-    const response = await apiClient.get<ProgramForSuper>(
+    const response = await apiClient.get<Program>(
       `/program/${programId}`,
     );
     return response.data;
@@ -37,43 +37,29 @@ export async function getAllPlaces() {
   }
 }
 
-// 대관 조회 //
-
-export async function getRentalsByPlaceId(placeId: string) {
-  try {
-    const response = await apiClient.get<Rental[]>(`/rental/${placeId}`);
-    return response.data ?? [];
-  } catch (error) {
-    console.log(`Place ID ${placeId}의 대관 현황을 가져오는데 실패했습니다!: `, error);
-    return [];
-  }
-}
-
-export async function checkUserRental(phone_num: string) {
-  try {
-    const response = await apiClient.get(`/rental/phone/${phone_num}/current`);
-    return response.data; // { hasActive: boolean, rental?: IRental }
-  } catch (error) {
-    console.log(`전화번호 ${phone_num}의 대관 현황 확인 실패: `, error);
-    return { hasActive: false };
-  }
-}
-
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 // 공지사항 조회 //
-export async function getAllNotices() {
+export async function getWaveNotices() {
   try {
-    const response = await apiClient.get(`/notice`);
+    const response = await apiClient.get<Notice[]>(`/notice/for-wave`);
     return response.data;
   } catch (error) {
-    console.log("모든 Notice를 가져오는데 실패했습니다!: ", error);
+    console.log("모든 Wave Notice를 가져오는데 실패했습니다!: ", error);
+  }
+}
+export async function getCommunityNotices() {
+  try {
+    const response = await apiClient.get<Notice[]>(`/notice/for-community`);
+    return response.data;
+  } catch (error) {
+    console.log("모든 Community Notice를 가져오는데 실패했습니다!: ", error);
   }
 }
 
 export async function getNoticeById(noticeId: string) {
   try {
-    const response = await apiClient.get(`/notice/${noticeId}`);
+    const response = await apiClient.get<Notice>(`/notice/${noticeId}`);
     return response.data;
   } catch (error) {
     console.log(`Notice ID ${noticeId}을 가져오는데 실패했습니다!: `, error);
@@ -82,30 +68,70 @@ export async function getNoticeById(noticeId: string) {
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-// Q&A 조회 //
-export async function getAllWaveQAs() {
+// 뉴스 조회 //
+export async function getAllNews() {
   try {
-    const response = await apiClient.get(`/qa/wave`);
+    const response = await apiClient.get<News[]>(`/news`);
+    return response.data;
+  } catch (error) {
+    console.log("모든 News를 가져오는데 실패했습니다!: ", error);
+  }
+}
+
+export async function getNewsById(newsId: string) {
+  try {
+    const response = await apiClient.get<News>(`/news/${newsId}`);
+    return response.data;
+  } catch (error) {
+    console.log(`News ID ${newsId}을 가져오는데 실패했습니다!: `, error);
+  }
+}
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+// Etc 조회 //
+export async function getAllEtcs() {
+  try {
+    const response = await apiClient.get<Etc[]>(`/etc`);
+    return response.data;
+  } catch (error) {
+    console.log("모든 Etc를 가져오는데 실패했습니다!: ", error);
+  }
+}
+
+export async function getEtcByWhere(where: string) {
+  try {
+    const response = await apiClient.get<Etc>(`/etc/${where}`);
+    return response.data;
+  } catch (error) {
+    console.log(`Etc ${where}을 가져오는데 실패했습니다!: `, error);
+  }
+}
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+// Q&A 조회 //
+export async function getWaveQAs() {
+  try {
+    const response = await apiClient.get<Qa[]>(`/qa/for-wave`);
     return response.data;
   } catch (error) {
     console.log("모든 Wave QA를 가져오는데 실패했습니다!: ", error);
   }
 }
 
-export async function getAllCommunityQAs() {
+export async function getCommunityQAs() {
   try {
-    const response = await apiClient.get(`/qa/community`);
+    const response = await apiClient.get<Qa[]>(`/qa/for-community`);
     return response.data;
   } catch (error) {
     console.log("모든 Community QA를 가져오는데 실패했습니다!: ", error);
   }
 }
 
-export async function getQAById(qaId: string, pw?: string) {
+export async function getQAById(qaId: string) {
   try {
-    const response = await apiClient.get(`/qa/${qaId}`, {
-      params: pw ? { pw } : {}
-    });
+    const response = await apiClient.get<Qa>(`/qa/${qaId}`);
     return response.data;
   } catch (error) {
     console.log(`QA ID ${qaId}을 가져오는데 실패했습니다!: `, error);
@@ -138,51 +164,49 @@ export async function getRequestById(requestId: string, pw?: string) {
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-// 신청 현황 조회 //
-export async function getRegistrationsByProgramId(programId: string) {
-  try {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const response = await apiClient.get(`/registration/program/${programId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.log(`Program ID ${programId}의 신청 현황을 가져오는데 실패했습니다!: `, error);
-  }
-}
-
-
-/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
+// Team 조회 //
 export async function getAllTeams() {
   try {
-    const response = await apiClient.get(`/team`);
+    const response = await apiClient.get<TeamSimple[]>(`/team`);
     return response.data;
   } catch (error) {
     console.log("모든 Team을 가져오는데 실패했습니다!: ", error);
   }
 }
 
-/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-// 뉴스 조회 //
-export async function getAllNews() {
+export async function getTeamByUserId(userId: string) {
   try {
-    const response = await apiClient.get(`/news`);
+    const response = await apiClient.get<TeamSimple>(`/team/user/${userId}`);
     return response.data;
   } catch (error) {
-    console.log("모든 News를 가져오는데 실패했습니다!: ", error);
+    console.log(`Team ID ${userId}을 가져오는데 실패했습니다!: `, error);
   }
 }
 
-export async function getNewsById(newsId: string) {
+export async function getTeamByUserIdWithPlan(userId: string) {
   try {
-    const response = await apiClient.get(`/news/${newsId}`);
+    const response = await apiClient.get<TeamWithPlan>(`/team/user/${userId}/detail`);
     return response.data;
   } catch (error) {
-    console.log(`News ID ${newsId}을 가져오는데 실패했습니다!: `, error);
+    console.log(`Team ID ${userId}을 가져오는데 실패했습니다!: `, error);
+  }
+}
+
+export async function getTeamWithPlanById(teamId: string) {
+  try {
+    const response = await apiClient.get<TeamWithPlan>(`/team/${teamId}/detail`);
+    return response.data;
+  } catch (error) {
+    console.log(`Team ID ${teamId} 상세 조회 실패!: `, error);
+  }
+}
+
+export async function getTeamById(teamId: string) {
+  try {
+    const response = await apiClient.get<Team>(`/team/${teamId}`);
+    return response.data;
+  } catch (error) {
+    console.log(`Team ID ${teamId} 조회 실패!: `, error);
   }
 }
 
@@ -198,41 +222,30 @@ export async function getMe() {
   }
 }
 
-// User ID로 Team 정보 조회 //
-export async function getTeamByUserId(userId: string) {
+export async function getRegistrationsByProgramId(programId: string) {
   try {
-    const response = await apiClient.get(`/team/user/${userId}`);
+    const response = await apiClient.get(`/program/${programId}/registrations`);
     return response.data;
   } catch (error) {
-    console.log(`User ID ${userId}의 Team 정보를 가져오는데 실패했습니다!: `, error);
-  }
-}
-// Team ID로 상세 정보 조회 //
-export async function getTeamById(teamId: string) {
-  try {
-    const response = await apiClient.get(`/team/${teamId}`);
-    return response.data;
-  } catch (error) {
-    console.log(`Team ID ${teamId} 조회 실패!: `, error);
+    console.log(`Program ID ${programId}의 신청 목록을 가져오는데 실패했습니다!: `, error);
   }
 }
 
-// 특정 팀의 모든 Request 내역 조회 //
-export async function getRequestsByTeamId(teamId: string) {
+// 사용자 관리
+export async function getAllUsers() {
   try {
-    const response = await apiClient.get(`/request/team/${teamId}`);
+    const response = await apiClient.get<UserSoSimple[]>(`/user/all`);
     return response.data;
   } catch (error) {
-    console.log(`Team ID ${teamId}의 Request 내역 조회 실패!: `, error);
+    console.log("모든 사용자를 가져오는데 실패했습니다!: ", error);
   }
 }
 
-// Request ID에 달린 검토 코멘트 조회 //
-export async function getCommentsByRequestId(requestId: string) {
+export async function getAllTeamsWithStatus() {
   try {
-    const response = await apiClient.get(`/comment/request/${requestId}`);
+    const response = await apiClient.get<TeamWithPlanStatus[]>(`/team/super`);
     return response.data;
   } catch (error) {
-    console.log(`Request ID ${requestId}의 코멘트 조회 실패!: `, error);
+    console.log("팀 상태 목록을 가져오는데 실패했습니다!: ", error);
   }
 }
