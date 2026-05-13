@@ -8,17 +8,19 @@ import { Loader2, Users, Building, ExternalLink } from 'lucide-react';
 import { getImage } from '@/utils/imageUtils';
 
 const typeLabels: Record<TeamType, string> = {
-  innovative: "혁신창업",
-  lab1th: "LAB 1th",
-  lab2th: "LAB 2th",
-  local1th: "LOCAL 일반",
-  local2th: "LOCAL 창업체험형",
+  "lab-series":    "LAB-SERIES",
+  "lab-innovation":"LAB-INNOVATION",
+  "lab1th":        "LAB 1부",
+  "lab2th":        "LAB 2부",
+  "local1th":      "LOCAL 실전창업형",
+  "local2th":      "LOCAL 창업체험형",
 };
 
 const MAIN_CATEGORIES = [
-  { id: 'INNOVATION', label: 'INNOVATION', types: ['innovative'] },
-  { id: 'LAB', label: 'LAB', types: ['lab1th', 'lab2th'] },
-  { id: 'LOCAL', label: 'LOCAL', types: ['local1th', 'local2th'] },
+  { id: 'LAB-SERIES',    label: 'LAB-SERIES',    types: ['lab-series'] },
+  { id: 'LAB-INNOVATION',label: 'LAB-INNOVATION', types: ['lab-innovation'] },
+  { id: 'LAB',          label: 'LAB',            types: ['lab1th', 'lab2th'] },
+  { id: 'LOCAL',        label: 'LOCAL',          types: ['local1th', 'local2th'] },
 ] as const;
 
 type CategoryId = typeof MAIN_CATEGORIES[number]['id'];

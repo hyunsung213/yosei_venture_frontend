@@ -5,10 +5,10 @@ import apiClient from "./api";
 export async function postProgram(formData: any) {
   try {
     const response = await apiClient.post(`/program`, formData);
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error: any) {
-    console.log(`Program을 생성하는 데 실패했습니다!: `, error);
-    return { success: false, message: error?.message || "생성 실패" };
+    console.error(`Program을 생성하는 데 실패했습니다!: `, error);
+    return { success: false, message: error?.response?.data?.message || "생성 실패" };
   }
 }
 
@@ -32,6 +32,7 @@ export async function postNews(formData: any) {
 
 export async function postQA(data: any) {
   try {
+    console.log(data)
     const response = await apiClient.post(`/qa`, data);
     return { success: true, data: response.data };
   } catch (error: any) {
@@ -72,5 +73,19 @@ export async function postRental(data: any) {
     return { success: true, data: response.data };
   } catch (error: any) {
     return { success: false, message: error?.response?.data?.message || "대관 신청 실패" };
+  }
+}
+
+export async function postPlace(formData: any) {
+  try {
+    const response = await apiClient.post(`/place`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error(`Place 생성 실패: `, error);
+    return { success: false, message: error?.response?.data?.message || "시설 생성 실패" };
   }
 }

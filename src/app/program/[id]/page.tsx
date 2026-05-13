@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import AdminApplicantModal from "@/components/program/AdminApplicantModal";
 import AdminEditButton from "@/components/program/AdminEditButton";
+import AdminDeleteButton from "@/components/program/AdminDeleteButton";
 import Link from "next/link";
 import { ArrowLeft, Loader2, FileText, Download, ChevronDown } from "lucide-react";
 import { getCleanFileName, getImage } from "@/utils/imageUtils";
@@ -101,8 +101,8 @@ export default function ProgramDetailPage() {
           목록으로 돌아가기
         </Link>
         <div className="flex items-center gap-3">
-          <AdminApplicantModal programId={programId} variant="header" />
           <AdminEditButton programId={programId} />
+          <AdminDeleteButton programId={programId} />
         </div>
       </div>
 
@@ -121,25 +121,6 @@ export default function ProgramDetailPage() {
         <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight break-keep mb-6">
           {program.title}
         </h1>
-        <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
-          <div className="flex items-center gap-6 bg-yonsei-blue/5 border border-yonsei-blue/10 px-6 py-3 rounded-2xl shadow-sm">
-            <div className="text-center md:text-left">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter block mb-1">모집 정원</span>
-              <span className="text-xl font-black text-gray-900">{program.capacity}명</span>
-            </div>
-            <div className="w-px h-8 bg-yonsei-blue/20" />
-          </div>
-          
-          {program.hashTags && (
-            <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0">
-              {program.hashTags.split('#').filter(Boolean).map((tag, idx) => (
-                <span key={idx} className="bg-yonsei-blue/10 text-yonsei-blue text-xs font-bold px-3 py-1 rounded-full border border-yonsei-blue/20">
-                  #{tag.trim()}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
       </section>
 
       {/* ──────────────────────────────────────────────────────────
@@ -158,66 +139,21 @@ export default function ProgramDetailPage() {
           </div>
         </div>
 
-        {/* Right: Files List */}
-        <div className="md:col-span-6 flex flex-col h-full">
-          <div className="bg-gray-50/50 rounded-2xl border border-gray-100 p-6 md:p-8 flex-1 flex flex-col">
-            <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-yonsei-blue" />
-              첨부파일 및 공고문
-            </h3>
-
-            {(() => {
-              // 백엔드 필드 규격 동기화 (file)
-              const rawFiles = program.files || [];
-              const filesArray = Array.isArray(rawFiles) ? rawFiles : [rawFiles].filter(Boolean);
-
-              return filesArray.length > 0 ? (
-                <div className="flex flex-col gap-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                  {filesArray.map((file, idx) => {
-                    // 객체(url, originalName)인 경우와 단순 문자열인 경우 모두 대응
-                    const isObject = typeof file === 'object' && file !== null;
-                    const fileUrl = isObject ? (file as any).url : String(file);
-                    
-                    // originalName이 있으면 사용, 없으면 파일 경로에서 추출하여 인코딩 깨짐 대비
-                    const fileName = isObject ? (file as any).originalName : getCleanFileName(String(file));
-
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-yonsei-blue/30 hover:shadow-md transition-all group"
-                      >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-yonsei-blue flex-shrink-0">
-                            <FileText className="w-5 h-5" />
-                          </div>
-                          <span className="font-bold text-gray-700 truncate text-sm md:text-base">
-                            {fileName}
-                          </span>
-                        </div>
-                        <a
-                          href={getImage(fileUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-4 p-2.5 bg-gray-50 text-gray-500 hover:bg-yonsei-blue hover:text-white rounded-lg transition-all flex items-center gap-2 text-xs font-black flex-shrink-0"
-                        >
-                          <Download className="w-4 h-4" />
-                          <span className="hidden sm:inline">다운로드</span>
-                        </a>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-2 border-2 border-dashed border-gray-100 rounded-xl py-12">
-                  <FileText className="w-10 h-10 opacity-20" />
-                  <p className="font-medium text-sm">등록된 첨부파일이 없습니다.</p>
-                </div>
-              );
-            })()}
-            
-            <p className="mt-6 text-xs text-gray-400 font-medium">
-              * 파일이 보이지 않을 경우 관리자에게 문의해주시기 바랍니다.
-            </p>
+        {/* Right: Info List */}
+        <div className="md:col-span-6 flex flex-col justify-end h-full">
+          <div className="flex flex-col gap-6 text-left px-4 md:px-8">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+              <span className="text-lg font-bold text-gray-500 min-w-[80px]">모집정원:</span>
+              <span className="text-xl font-black text-gray-900">{program.capacity}명</span>
+            </div>
+            {program.link && (
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <span className="text-lg font-bold text-gray-500 min-w-[80px]">참여링크:</span>
+                <a href={program.link} target="_blank" rel="noopener noreferrer" className="text-xl font-bold text-yonsei-blue hover:underline break-all">
+                  {program.link}
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -261,6 +197,68 @@ export default function ProgramDetailPage() {
             </motion.button>
           </div>
         )}
+      </section>
+
+      {/* ──────────────────────────────────────────────────────────
+          Section 3: Files (Bottom)
+          ────────────────────────────────────────────────────────── */}
+      <section className="mb-16">
+        <div className="bg-gray-50/50 rounded-2xl border border-gray-100 p-6 md:p-8 flex-1 flex flex-col">
+          <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-yonsei-blue" />
+            첨부파일 및 공고문
+          </h3>
+
+          {(() => {
+            const rawFiles = program.files || [];
+            const filesArray = Array.isArray(rawFiles) ? rawFiles : [rawFiles].filter(Boolean);
+
+            return filesArray.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {filesArray.map((file, idx) => {
+                  const isObject = typeof file === 'object' && file !== null;
+                  const fileUrl = isObject ? (file as any).url : String(file);
+                  const fileName = isObject ? (file as any).originalName : getCleanFileName(String(file));
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-yonsei-blue/30 hover:shadow-md transition-all group"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-yonsei-blue flex-shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <span className="font-bold text-gray-700 truncate text-sm md:text-base">
+                          {fileName}
+                        </span>
+                      </div>
+                      <a
+                        href={getImage(fileUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={fileName}
+                        className="ml-4 p-2.5 bg-gray-50 text-gray-500 hover:bg-yonsei-blue hover:text-white rounded-lg transition-all flex items-center gap-2 text-xs font-black flex-shrink-0"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span className="hidden sm:inline">다운로드</span>
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-2 border-2 border-dashed border-gray-100 rounded-xl py-12">
+                <FileText className="w-10 h-10 opacity-20" />
+                <p className="font-medium text-sm">등록된 첨부파일이 없습니다.</p>
+              </div>
+            );
+          })()}
+          
+          <p className="mt-6 text-xs text-gray-400 font-medium">
+            * 파일이 보이지 않을 경우 관리자에게 문의해주시기 바랍니다.
+          </p>
+        </div>
       </section>
     
     </div>

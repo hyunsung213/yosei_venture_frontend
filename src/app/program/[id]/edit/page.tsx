@@ -23,9 +23,9 @@ export default function ProgramEditPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [content, setContent] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
-  const tagInputRef = useRef<HTMLInputElement>(null);
+  const [capacity, setCapacity] = useState("");
+  const [link, setLink] = useState("");
+
 
   // Fetch existing data
   useEffect(() => {
@@ -41,9 +41,8 @@ export default function ProgramEditPage() {
           if (data.startDate) setStartDate(new Date(data.startDate).toISOString().split('T')[0]);
           if (data.endDate) setEndDate(new Date(data.endDate).toISOString().split('T')[0]);
           setContent(data.content);
-          if (data.hashTags) {
-            setTags(data.hashTags.split("#").filter(Boolean));
-          }
+          if (data.capacity) setCapacity(data.capacity.toString());
+          if (data.link) setLink(data.link);
         }
       } catch (err) {
         console.error("Failed to fetch program:", err);
@@ -73,31 +72,7 @@ export default function ProgramEditPage() {
     );
   }
 
-  const commitTag = () => {
-    const raw = tagInput.replace(/#/g, "").trim();
-    if (!raw) {
-      setTagInput("");
-      return;
-    }
-    if (!tags.includes(raw)) {
-      setTags((prev) => [...prev, raw]);
-    }
-    setTagInput("");
-  };
 
-  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      commitTag();
-    }
-    if (e.key === "Backspace" && tagInput === "" && tags.length > 0) {
-      setTags((prev) => prev.slice(0, -1));
-    }
-  };
-
-  const removeTag = (idx: number) => {
-    setTags((prev) => prev.filter((_, i) => i !== idx));
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,33 +81,30 @@ export default function ProgramEditPage() {
 
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("start_date", startDate);
-    formData.append("end_date", endDate);
+    formData.append("startDate", startDate);
+    formData.append("endDate", endDate);
     formData.append("content", content);
-    const hashTagsString = tags.length > 0 ? "#" + tags.join("#") : "";
-    formData.append("hashTags", hashTagsString);
-
-    // Files
+    if (capacity) formData.append("capacity", capacity);
+    if (link) formData.append("link", link);
     const form = e.currentTarget;
     const posterInput = form.elements.namedItem("poster") as HTMLInputElement;
     if (posterInput?.files?.[0]) {
-      formData.append("poster_url", posterInput.files[0]);
+      formData.append("poster", posterInput.files[0]);
     }
 
     const filesInput = form.elements.namedItem("files") as HTMLInputElement;
     if (filesInput?.files) {
       Array.from(filesInput.files).forEach((file) => {
-        formData.append("file", file);
+        formData.append("files", file);
       });
     }
-
     const res = await putProgramForm(programId, formData);
 
     setIsPending(false);
     if (res.success) {
       window.alert("공고가 성공적으로 수정되었습니다!");
       router.push(`/program/${programId}`);
-      router.refresh(); // 최신 데이터 반영을 위해 리프레시
+      router.refresh(); 
     } else {
       setErrorPrompt(res.message ?? "수정 중 오류가 발생했습니다.");
     }
@@ -188,35 +160,29 @@ export default function ProgramEditPage() {
                 className="w-full border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-yonsei-blue/50 outline-none transition-shadow"
               />
             </div>
-
-            {/* HashTag */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-extrabold text-gray-700 mb-2">해시태그</label>
-              <div
-                className="min-h-[52px] w-full flex flex-wrap gap-2 items-center border border-gray-200 rounded-xl px-3 py-2.5 cursor-text focus-within:ring-2 focus-within:ring-yonsei-blue/50 focus-within:border-yonsei-blue transition-all"
-                onClick={() => tagInputRef.current?.focus()}
-              >
-                {tags.map((tag, idx) => (
-                  <span key={idx} className="bg-yonsei-blue/10 text-yonsei-blue text-sm font-bold px-3 py-1 rounded-full border border-yonsei-blue/20 flex items-center gap-1">
-                    #{tag}
-                    <button type="button" onClick={() => removeTag(idx)} className="hover:text-red-500 transition-colors">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-                <input
-                  ref={tagInputRef}
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value.startsWith("#") ? e.target.value : "#" + e.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  onBlur={commitTag}
-                  placeholder={tags.length === 0 ? "#태그 입력..." : ""}
-                  className="flex-1 min-w-[140px] outline-none bg-transparent text-sm"
-                />
-              </div>
+              <label className="block text-sm font-extrabold text-gray-700 mb-2">신청 인원 (명)</label>
+              <input
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                type="number"
+                min="1"
+                step="1"
+                className="w-full text-lg border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-yonsei-blue/50 outline-none transition-shadow"
+                placeholder="인원 수를 자연수로 입력"
+              />
             </div>
 
+            <div className="md:col-span-2">
+              <label className="block text-sm font-extrabold text-gray-700 mb-2">신청 관련 링크</label>
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                type="url"
+                className="w-full text-lg border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-yonsei-blue/50 outline-none transition-shadow"
+                placeholder="https://example.com"
+              />
+            </div>
             {/* Files (Posters/Files) */}
             <div className="md:col-span-2">
               <label className="block text-sm font-extrabold text-gray-700 mb-2">포스터 이미지 (변경 시에만 선택)</label>

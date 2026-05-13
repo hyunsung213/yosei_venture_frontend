@@ -13,10 +13,7 @@ export default function ProgramCreatePage() {
   const [isPending, setIsPending] = useState(false);
   const [errorPrompt, setErrorPrompt] = useState("");
 
-  // HashTag state
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
-  const tagInputRef = useRef<HTMLInputElement>(null);
+
 
   if (role !== 'super') {
     return (
@@ -29,37 +26,7 @@ export default function ProgramCreatePage() {
     );
   }
 
-  /** 태그 추가 로직 */
-  const commitTag = () => {
-    // '#' 제거, 앞뒤 공백 제거
-    const raw = tagInput.replace(/#/g, "").trim();
-    if (!raw) {
-      setTagInput("");
-      return;
-    }
-    // 중복 방지
-    if (!tags.includes(raw)) {
-      setTags((prev) => [...prev, raw]);
-    }
-    setTagInput("");
-  };
 
-  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.nativeEvent.isComposing) return; // 한글 조합 중 방어
-    // Enter 또는 Space → 태그 확정
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      commitTag();
-    }
-    // Backspace + 입력 없으면 마지막 태그 삭제
-    if (e.key === "Backspace" && tagInput === "" && tags.length > 0) {
-      setTags((prev) => prev.slice(0, -1));
-    }
-  };
-
-  const removeTag = (idx: number) => {
-    setTags((prev) => prev.filter((_, i) => i !== idx));
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,10 +48,13 @@ export default function ProgramCreatePage() {
     if (capacityInput?.value) {
       formData.append("capacity", capacityInput.value);
     }
+    
+    const linkInput = form.elements.namedItem("link") as HTMLInputElement;
+    if (linkInput?.value) {
+      formData.append("link", linkInput.value);
+    }
 
-    // HashTag: #으로 구분된 하나의 string으로 전달
-    const hashTagsString = tags.length > 0 ? "#" + tags.join("#") : "";
-    formData.append("hashTags", hashTagsString);
+
 
     // Poster image (single file)
     const posterInput = form.elements.namedItem("poster") as HTMLInputElement;
@@ -99,13 +69,6 @@ export default function ProgramCreatePage() {
         formData.append("files", file);
       });
     }
-    // FormData 전송 내용 확인 (개발용 로그)
-    console.group("📤 Program FormData 전송 내용");
-    for (const [key, val] of formData.entries()) {
-      console.log(key, val instanceof File ? `[File] name=${val.name}, size=${val.size}bytes, type=${val.type}` : val);
-    }
-    console.groupEnd();
-
     const res = await postProgram(formData);
 
     setIsPending(false);
@@ -198,56 +161,16 @@ export default function ProgramCreatePage() {
               />
             </div>
 
-            {/* HashTag Input */}
             <div className="md:col-span-2">
               <label className="block text-sm font-extrabold text-gray-700 mb-2">
-                해시태그{" "}
-                <span className="text-gray-400 font-normal">
-                  (#창업 입력 후 Enter 또는 Space)
-                </span>
+                신청 관련 링크
               </label>
-
-              {/* Tag Badge Area + Input */}
-              <div
-                className="min-h-[52px] w-full flex flex-wrap gap-2 items-center border border-gray-200 rounded-xl px-3 py-2.5 cursor-text focus-within:ring-2 focus-within:ring-yonsei-blue/50 focus-within:border-yonsei-blue transition-all"
-                onClick={() => tagInputRef.current?.focus()}
-              >
-                {tags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1 bg-yonsei-blue/10 text-yonsei-blue text-sm font-bold px-3 py-1 rounded-full border border-yonsei-blue/20"
-                  >
-                    #{tag}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeTag(idx);
-                      }}
-                      className="ml-0.5 hover:text-red-500 transition-colors rounded-full"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-
-                <input
-                  ref={tagInputRef}
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  onBlur={commitTag}
-                  placeholder={tags.length === 0 ? "#창업 #스타트업 #연세대..." : ""}
-                  className="flex-1 min-w-[140px] outline-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400"
-                />
-              </div>
-
-              {tags.length > 0 && (
-                <p className="text-[11px] text-gray-400 mt-1.5">
-                  전송 값: <span className="font-mono text-gray-500">#{tags.join("#")}</span>
-                </p>
-              )}
+              <input
+                name="link"
+                type="url"
+                className="w-full text-lg border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-yonsei-blue/50 outline-none transition-shadow"
+                placeholder="https://example.com"
+              />
             </div>
 
             <div className="md:col-span-2">

@@ -18,13 +18,23 @@ export function getImage(path?: string | null, fallback = "/board_dummy_1.jpg"):
 }
 
 export function getCleanFileName(path: string): string {
-  const parts = path.split("/");
-  const lastPart = parts[parts.length - 1];
-  
-  const hyphenIndex = lastPart.indexOf("-");
-  if (hyphenIndex !== -1) {
-    return lastPart.substring(hyphenIndex + 1);
+  try {
+    const decodedPath = decodeURIComponent(path);
+    const parts = decodedPath.split("/");
+    const lastPart = parts[parts.length - 1];
+    
+    const hyphenIndex = lastPart.indexOf("-");
+    if (hyphenIndex !== -1) {
+      return lastPart.substring(hyphenIndex + 1);
+    }
+    
+    return lastPart;
+  } catch (e) {
+    // If decoding fails, fallback to original path
+    const parts = path.split("/");
+    const lastPart = parts[parts.length - 1];
+    const hyphenIndex = lastPart.indexOf("-");
+    if (hyphenIndex !== -1) return lastPart.substring(hyphenIndex + 1);
+    return lastPart;
   }
-  
-  return lastPart;
 }

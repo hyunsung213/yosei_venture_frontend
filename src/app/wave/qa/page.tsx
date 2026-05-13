@@ -3,38 +3,41 @@
 import { postQA } from '@/api/post';
 import { ChevronDown, ChevronUp, MessageSquarePlus, X, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Qa } from '@/interface/interface';
+import { Qa, PaginationInfo } from '@/interface/interface';
 import { useEffect, useState } from 'react';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect, useRouter, useSearchParams } from 'next/navigation';
+import Pagination from '@/components/common/Pagination';
 import { ShieldAlert } from 'lucide-react';
 import { getQAById, getWaveQAs } from '@/api/get';
+import Link from 'next/link';
 
 export default function WaveQAPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = parseInt(searchParams.get('page') || '1', 10);
+
   const [qas, setQas] = useState<Qa[]>([]);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const { role } = useAuth();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   
   // Creation Form State
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isOpenInput, setIsOpenInput] = useState(true);
   const [passwordInput, setPasswordInput] = useState("");
 
-  // Private Access State
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-  const [targetId, setTargetId] = useState<string | null>(null);
-  const [accessPassword, setAccessPassword] = useState("0000");
-  const [isAccessing, setIsAccessing] = useState(false);
-
-  async function load() {
+  async function load(currentPage: number) {
     setLoading(true);
     try {
-      const data = await getWaveQAs();
-      setQas(data ?? []);
+      const data = await getWaveQAs(currentPage, 10);
+      if (data) {
+        setQas(data.items || []);
+        setPagination(data.pagination);
+      } else {
+        setQas([]);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,16 +50,16 @@ export default function WaveQAPage() {
       router.push('/auth/login?redirect=/wave/qa');
       return;
     }
-    load();
-  }, [role]);
+    load(page);
+  }, [role, page]);
+
+  const handlePageChange = (newPage: number) => {
+    router.push(`/wave/qa?page=${newPage}`);
+  };
 
   const handleCreate = async () => {
     if (!title || !content) {
       alert("제목과 내용을 입력해주세요.");
-      return;
-    }
-    if (!isOpenInput && !passwordInput) {
-      alert("비공개 시 패스워드를 입력해주세요.");
       return;
     }
 
@@ -64,53 +67,21 @@ export default function WaveQAPage() {
     const res = await postQA({
       title,
       content,
-      isOpen: isOpenInput,
-      pw: passwordInput,
+      pwd: passwordInput || "0000",
       isWave: true
     });
     setIsPending(false);
 
     if (res.success) {
-      alert("WAVE 상담글이 등록되었습니다.");
+      alert("상담글이 등록되었습니다.");
       setIsModalOpen(false);
-      load();
+      if (page === 1) {
+        load(1);
+      } else {
+        router.push(`/wave/qa?page=1`);
+      }
     } else {
       alert(res.message || "등록 실패");
-    }
-  };
-
-  const handleToggleOpen = async (qa: Qa) => {
-    const isCurrentlyOpen = openId === qa.id;
-    if (isCurrentlyOpen) {
-      setOpenId(null);
-      return;
-    }
-
-    if (role === 'wave' || role === 'super' || qa.isOpen) {
-      await fetchDetail(qa.id!);
-    } else {
-      setTargetId(qa.id!);
-      setShowPasswordPrompt(true);
-    }
-  };
-
-  const fetchDetail = async (id: string, password?: string) => {
-    setIsAccessing(true);
-    if (password) {
-      setAccessPassword(password);
-    }
-    const data = await getQAById(id);
-    setIsAccessing(false);
-
-    if (data) {
-      setQas(prev => prev.map(item => item.id === id ? { ...item, content: data.content } : item));
-      setOpenId(id);
-      if (data.pwd == accessPassword) {
-        setShowPasswordPrompt(false);
-      }
-      else alert("비밀번호가 틀렸습니다.");
-    } else {
-      alert("접근 권한이 없거나 비밀번호가 틀렸습니다.");
     }
   };
 
@@ -158,26 +129,6 @@ export default function WaveQAPage() {
             </div>
             
             <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              {/* 자동 입력된 사용자 정보 */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <span className="text-xs font-bold text-gray-500 mb-3 block uppercase tracking-wider">등록자 정보 (자동 입력)</span>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">이름</label>
-                    <input type="text" value={mockProfile.name} disabled className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">연락처</label>
-                    <input type="text" value={mockProfile.phone} disabled className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 font-medium" />
-                  </div>
-                  {(role === 'wave') && (
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-gray-700 mb-1">소속 팀/기업</label>
-                      <input type="text" value={mockProfile.team} disabled className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 font-medium" />
-                    </div>
-                  )}
-                </div>
-              </div>
 
               {/* 입력 폼 */}
               <div>
@@ -203,45 +154,20 @@ export default function WaveQAPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-3">
-                  <label className="block text-sm font-bold text-gray-700">공개 여부</label>
-                  <div className="flex items-center gap-6 h-[42px]">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="visibility" 
-                        checked={isOpenInput} 
-                        onChange={() => setIsOpenInput(true)} 
-                        className="w-4 h-4 text-yonsei-blue focus:ring-yonsei-blue" 
-                      />
-                      <span className="text-gray-700 font-medium text-sm">공개</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="visibility" 
-                        checked={!isOpenInput} 
-                        onChange={() => setIsOpenInput(false)} 
-                        className="w-4 h-4 text-yonsei-blue focus:ring-yonsei-blue" 
-                      />
-                      <span className="text-gray-700 font-medium text-sm">비공개</span>
-                    </label>
+                <div className="animate-in fade-in flex flex-col justify-end">
+                  <label className="block text-sm font-bold text-gray-700 mb-1">임시 비밀번호</label>
+                  <input 
+                    type="password" 
+                    maxLength={4} 
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-yonsei-blue focus:border-transparent outline-none transition font-mono tracking-widest" 
+                    placeholder="숫자 4자리 입력" 
+                  />
+                  <div className="text-sm text-gray-500 font-medium mt-2">
+                    * 비밀번호 미설정 시 0000이 임시비밀번호로 설정됩니다.
                   </div>
                 </div>
-
-                {!isOpenInput && (
-                  <div className="animate-in fade-in slide-in-from-right-2 flex flex-col justify-end">
-                    <label className="block text-sm font-bold text-gray-700 mb-1">임시 비밀번호 <span className="text-red-500">*</span></label>
-                    <input 
-                      type="password" 
-                      maxLength={4} 
-                      value={passwordInput}
-                      onChange={(e) => setPasswordInput(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-yonsei-blue focus:border-transparent outline-none transition font-mono tracking-widest" 
-                      placeholder="숫자 4자리 입력" 
-                    />
-                  </div>
-                )}
               </div>
             </div>
             
@@ -265,79 +191,53 @@ export default function WaveQAPage() {
         </div>
       )}
 
-      {/* 비밀번호 입력 프롬프트 */}
-      {showPasswordPrompt && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
-            <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
-              <Lock className="w-5 h-5 text-red-500" />
-              비밀글 열람
-            </h3>
-            <p className="text-sm text-gray-500 font-medium">상담글 작성 시 설정한 비밀번호 4자리를 입력해주세요.</p>
-            <input 
-              type="password" 
-              maxLength={4} 
-              autoFocus
-              value={accessPassword}
-              onChange={(e) => setAccessPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-yonsei-blue outline-none text-center font-mono text-2xl tracking-[1em]" 
-            />
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setShowPasswordPrompt(false)} 
-                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition"
-              >
-                취소
-              </button>
-              <button 
-                onClick={() => fetchDetail(targetId!, accessPassword)}
-                disabled={isAccessing}
-                className="flex-1 py-3 rounded-xl bg-yonsei-blue text-white font-bold hover:bg-blue-800 transition flex items-center justify-center gap-2"
-              >
-                {isAccessing && <Loader2 className="w-4 h-4 animate-spin" />}
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 리스트 */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-        {qas.length > 0 ? (
-          <div className="space-y-4">
-            {qas.map((qa, idx) => {
-               const isOpen = openId === qa.id;
-               return (
-                 <div key={qa.id || idx} className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-300">
-                   <button 
-                     onClick={() => handleToggleOpen(qa)}
-                     className={`w-full flex items-center justify-between p-5 text-left transition-colors ${isOpen ? 'bg-blue-50/50' : 'bg-white hover:bg-gray-50'}`}
-                   >
-                     <div className="flex items-center gap-4">
-                       <span className="text-yonsei-blue font-black font-serif text-xl">Q.</span>
-                       <div className="flex items-center gap-2">
-                         {!qa.isOpen && <Lock className="w-3.5 h-3.5 text-gray-400" />}
-                         <span className="font-bold text-gray-900">{qa.title}</span>
-                         {qa.status === 'approved' && (
-                           <span className="bg-green-100 text-green-700 text-[10px] px-1.5 py-0.5 rounded font-black">답변완료</span>
-                         )}
-                       </div>
-                     </div>
-                     {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
-                   </button>
-                   
-                   {isOpen && (
-                     <div className="p-5 bg-gray-50 border-t border-gray-100 flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
-                       <span className="text-red-500 font-black font-serif text-xl">A.</span>
-                       <p className="text-gray-600 leading-relaxed font-medium mt-1 break-keep">
-                         {qa.content || "답변을 준비중입니다."}
-                       </p>
-                     </div>
-                   )}
-                 </div>
-               )
-            })}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {loading ? (
+          <div className="py-20 text-center text-gray-400 font-bold flex flex-col items-center gap-2">
+            <Loader2 className="w-8 h-8 animate-spin text-yonsei-blue" />
+            <p>로딩 중...</p>
+          </div>
+        ) : qas.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-sm font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-6 py-4 w-20 text-center">번호</th>
+                  <th className="px-4 py-4 w-24 text-center">상태</th>
+                  <th className="px-6 py-4 text-center">제목</th>
+                  <th className="px-6 py-4 w-32 text-center">작성일</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {qas.map((qa, idx) => {
+                  const number = pagination ? pagination.totalItems - ((pagination.page - 1) * pagination.limit) - idx : qas.length - idx;
+                  return (
+                    <tr key={qa.id || idx} className="odd:bg-white even:bg-slate-50 hover:bg-gray-100 transition-colors group">
+                      <td className="px-6 py-4 text-center text-gray-400 font-medium">
+                        {number}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`text-[10px] px-2 py-1 rounded font-black whitespace-nowrap inline-block ${
+                          qa.status === 'answered' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {qa.status === 'answered' ? '답변완료' : '답변 대기중'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Link href={`/wave/qa/${qa.id}`} className="flex items-center justify-center gap-2 font-bold text-gray-900 hover:text-yonsei-blue transition-colors w-full max-w-lg mx-auto">
+                          <span className="truncate">{qa.title}</span>
+                          <Lock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 font-medium">
+                        {qa.createdAt ? new Date(qa.createdAt).toLocaleDateString() : '-'}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
           <div className="py-20 text-center text-gray-400 font-bold flex flex-col items-center gap-2">
@@ -345,6 +245,10 @@ export default function WaveQAPage() {
           </div>
         )}
       </div>
+
+      {!loading && pagination && (
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
+      )}
     </div>
   );
 }

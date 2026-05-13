@@ -88,15 +88,6 @@ export default function HeroSection() {
           <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-10 font-light break-keep">
             연세대학교 미래캠퍼스 창업지원단은 학생, 교원, 그리고 예비 창업가들이 세상을 바꿀 혁신을 만들어갈 수 있도록 지원합니다.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-yonsei-blue text-white rounded-xl font-bold text-lg hover:bg-white hover:text-yonsei-blue transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-              창업지원 패키지 신청
-            </button>
-            <button className="px-8 py-4 bg-white/10 text-white rounded-xl font-bold text-lg border border-white/30 backdrop-blur-md hover:bg-white/20 transition-all duration-300">
-              진행중인 프로그램
-            </button>
-          </div>
         </motion.div>
       </div>
 

@@ -1,28 +1,37 @@
-import apiClient from "./api";
+import apiClient from "./axiosConfig";
 import { ILogin, IUser } from "@/interface/interface";
 
 export async function postRegister(regData: IUser) {
-  try{
-      const res = await apiClient.post('/auth/register', regData);
-      alert('회원가입이 완료되었습니다. 로그인해주세요.');
-    return res;
-    } catch (err: any) {
-      console.error(err);
-      alert(err.response?.data?.message || '회원가입에 실패했습니다.');
-      return err;
-    }
-  };
-
+  const res = await apiClient.post('/auth/register', regData);
+  return res;
+};
 
 export async function postLogin(loginData: ILogin) {
-try{
-    const res = await apiClient.post('/auth/login', loginData);
-    localStorage.setItem('token', res.data.token);
-    alert('로그인 되었습니다.');
+  const res = await apiClient.post('/auth/login', loginData);
   return res;
-  } catch (err: any) {
-    console.error(err);
-    alert(err.response?.data?.message || '로그인에 실패했습니다.');
-    return err;
-  }
 };
+
+export async function postFindEmail(data: { name: string; phone: string }) {
+  const res = await apiClient.post('/auth/find-email', data);
+  return res;
+}
+
+export async function postForgotPassword(data: { email: string }) {
+  const res = await apiClient.post('/auth/forgot-password', data);
+  return res;
+}
+
+export async function postVerifyResetToken(data: { token: string }) {
+  const res = await apiClient.post('/auth/verify-reset-token', data);
+  return res;
+}
+
+export async function postResetPassword(data: { token: string; newPassword: string }) {
+  const res = await apiClient.post('/auth/reset-password', data);
+  return res;
+}
+
+export async function postChangePassword(data: { currentPassword: string; newPassword: string }) {
+  const res = await apiClient.post('/auth/change-password', data);
+  return res;
+}

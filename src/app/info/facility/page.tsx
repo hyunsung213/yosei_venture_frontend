@@ -6,11 +6,23 @@ import { MapPin, Loader2, ServerOff } from 'lucide-react';
 import { Place } from '@/interface/interface';
 import { getImage } from '@/utils/imageUtils';
 import { getAllPlaces } from '@/api/get';
+import { postPlace } from '@/api/post';
+import { putPlace } from '@/api/put';
+import { deletePlace } from '@/api/delete';
+import { useAuth } from '@/contexts/AuthContext';
+import PlaceModal from '@/components/admin/PlaceModal';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 
 export default function FacilityPage() {
+  const { role } = useAuth();
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPlace, setEditingPlace] = useState<Place | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     async function fetchPlaces() {
@@ -28,8 +40,74 @@ export default function FacilityPage() {
     fetchPlaces();
   }, []);
 
+  const handleAdd = () => {
+    setEditingPlace(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (place: Place) => {
+    setEditingPlace(place);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (placeId: string) => {
+    if (!window.confirm("정말로 이 시설을 삭제하시겠습니까?")) return;
+    try {
+      const res = await deletePlace(placeId);
+      if (res.success) {
+        setPlaces(places.filter(p => p.id !== placeId));
+      } else {
+        alert(res.message);
+      }
+    } catch (e) {
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    try {
+      if (editingPlace) {
+        const res = await putPlace(editingPlace.id, formData);
+        if (res.success) {
+          // Refetch to get updated image urls
+          const updatedPlaces = await getAllPlaces();
+          setPlaces(updatedPlaces || []);
+          setIsModalOpen(false);
+        } else {
+          alert(res.message);
+        }
+      } else {
+        const res = await postPlace(formData);
+        if (res.success) {
+          const updatedPlaces = await getAllPlaces();
+          setPlaces(updatedPlaces || []);
+          setIsModalOpen(false);
+        } else {
+          alert(res.message);
+        }
+      }
+    } catch (error) {
+      alert("요청 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full">
+      {/* Admin Controls */}
+      {role === 'super' && (
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={handleAdd}
+            className="flex items-center gap-2 bg-yonsei-blue text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            시설 추가하기
+          </button>
+        </div>
+      )}
       {/* 로딩 */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-12 gap-4 text-gray-400">
@@ -58,8 +136,27 @@ export default function FacilityPage() {
             return (
               <div
                 key={placeId}
-                className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"
+                className="group relative bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"
               >
+                {role === 'super' && (
+                  <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+                    <button
+                      onClick={(e) => { e.preventDefault(); handleEdit(place); }}
+                      className="p-2 bg-white/90 hover:bg-white text-gray-700 rounded-lg shadow-sm backdrop-blur-sm border border-gray-200 transition"
+                      title="수정"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.preventDefault(); handleDelete(placeId); }}
+                      className="p-2 bg-white/90 hover:bg-red-50 text-red-600 rounded-lg shadow-sm backdrop-blur-sm border border-red-100 transition"
+                      title="삭제"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
                   <Image
                     src={viewImage}
@@ -89,6 +186,14 @@ export default function FacilityPage() {
           })}
         </div>
       )}
+
+      <PlaceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        initialData={editingPlace}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 }

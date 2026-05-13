@@ -9,8 +9,8 @@ interface AuthContextType {
   isLoaded: boolean;
   setRole: (role: RoleType) => void;
   setUserId: (id: string) => void;
-  login: (token: string, type: RoleType, userId: string) => void;
-  logout: () => void;
+  login: (token: string, refreshToken: string, type: RoleType, userId: string) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,16 +33,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoaded(true);
   }, []);
 
-  const login = (token: string, type: RoleType, userId: string) => {
+  const login = (token: string, refreshToken: string, type: RoleType, userId: string) => {
     localStorage.setItem('token', token);
+    localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('role', type);
     localStorage.setItem('userId', userId);
     setRole(type);
     setUserId(userId);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken) {
+      try {
+        // Use standard fetch to avoid circular dependency with apiClient if needed, 
+        // or just use apiClient. If we use apiClient, we need to import it.
+        // Let's import apiClient at the top.
+        const { default: apiClient } = await import('@/api/axiosConfig');
+        await apiClient.post('/auth/logout', { refreshToken });
+      } catch (err) {
+        console.error('Logout API failed:', err);
+      }
+    }
+    
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('role');
     localStorage.removeItem('userId');
     setRole("guest");

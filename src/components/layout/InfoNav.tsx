@@ -7,7 +7,7 @@ const tabs = [
   { name: "인사말", href: "/info/intro" },
   { name: "연혁", href: "/info/history" },
   { name: "조직도", href: "/info/org" },
-  { name: "시설 현황", href: "/info/facility" },
+  // { name: "시설 현황", href: "/info/facility" },
   { name: "오시는 길", href: "/info/location" },
 ];
 

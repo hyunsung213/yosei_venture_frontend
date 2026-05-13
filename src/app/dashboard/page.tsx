@@ -6,17 +6,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAllTeamsWithStatus, getAllUsers } from '@/api/get';
 import { postTeam } from '@/api/post';
 import { putPlan } from '@/api/put';
-import { TeamWithPlanStatus, UserSimple, TeamType, UserSoSimple } from '@/interface/interface';
+import { TeamWithPlanStatus, UserSimple, TeamType } from '@/interface/interface';
 import { PlusCircle, ShieldAlert, Edit, Save, Loader2, Users, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { getImage } from '@/utils/imageUtils';
 
 const TEAM_TYPES: { value: TeamType, label: string }[] = [
-  { value: 'innovative', label: 'Innovation' },
-  { value: 'lab1th', label: 'Lab 1부' },
-  { value: 'lab2th', label: 'Lab 2부' },
-  { value: 'local1th', label: 'Local 일반창업형' },
-  { value: 'local2th', label: 'Local 창업체험형' },
+  { value: 'lab-series',    label: 'LAB-SERIES' },
+  { value: 'lab-innovation',label: 'LAB-INNOVATION' },
+  { value: 'lab1th',        label: 'LAB 1부' },
+  { value: 'lab2th',        label: 'LAB 2부' },
+  { value: 'local1th',      label: 'LOCAL 실전창업형' },
+  { value: 'local2th',      label: 'LOCAL 창업체험형' },
 ];
 
 export default function WaveAdminDashboard() {
@@ -24,7 +25,7 @@ export default function WaveAdminDashboard() {
   const { role } = useAuth();
   
   const [teams, setTeams] = useState<TeamWithPlanStatus[]>([]);
-  const [users, setUsers] = useState<UserSoSimple[]>([]);
+  const [users, setUsers] = useState<UserSimple[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -36,7 +37,7 @@ export default function WaveAdminDashboard() {
   const [newTeam, setNewTeam] = useState({
     name: '',
     describe: '',
-    type: 'innovative' as TeamType,
+    type: 'lab-series' as TeamType,
     balance: '',
   });
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -133,7 +134,7 @@ export default function WaveAdminDashboard() {
     if (res.success) {
       alert("팀이 생성되었습니다.");
       setIsModalOpen(false);
-      setNewTeam({ name: '', describe: '', type: 'innovative', balance: '' });
+      setNewTeam({ name: '', describe: '', type: 'lab-series', balance: '' });
       setSelectedUserIds([]);
       loadData();
     } else {
@@ -174,6 +175,13 @@ export default function WaveAdminDashboard() {
             <p className="text-sm text-gray-500 mt-1">총 {teams.length}개의 팀을 관리하고 처리 대기 중인 항목을 검토합니다.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/dashboard/users"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              유저 관리
+            </Link>
             <button 
               onClick={() => handleGlobalEditToggle(true)}
               className="px-4 py-2 bg-blue-50 text-yonsei-blue text-sm font-bold rounded-lg hover:bg-blue-100 transition-colors"

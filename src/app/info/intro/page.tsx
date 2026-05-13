@@ -1,27 +1,19 @@
 'use client';
 
-import { useEffect, useState } from "react";
 import { Quote } from "lucide-react";
-import { getGreetings } from "@/api/getInfo";
-import AdminContentEditor from '@/components/admin/AdminContentEditor';
+
+const dummyGreetings = {
+  quote: "혁신적인 아이디어로 미래를 창조하는 연세대학교 창업지원단입니다.",
+  paragraphs: [
+    "연세대학교 미래캠퍼스 창업지원단 홈페이지를 방문해 주셔서 진심으로 환영합니다.",
+    "우리 창업지원단은 창의적이고 혁신적인 아이디어를 가진 학생과 예비 창업자들이 성공적인 창업의 꿈을 이룰 수 있도록 체계적인 지원과 맞춤형 프로그램을 제공하고 있습니다. 우수한 멘토링, 폭넓은 네트워킹, 실질적인 인프라 지원을 통해 지역 사회와 국가 경제 발전에 기여하는 글로벌 창업 인재를 양성하는 것이 우리의 목표입니다.",
+    "앞으로도 여러분의 끝없는 도전과 열정을 응원하며, 창업 생태계의 든든한 동반자가 되겠습니다. 감사합니다."
+  ],
+  director: "창업지원단장",
+  signatureText: "Director of Yonsei Venture"
+};
 
 export default function Sub1Greetings() {
-  const [greetings, setGreetings] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const data = await getGreetings();
-      setGreetings(data);
-      setIsLoading(false);
-    }
-    load();
-  }, []);
-
-  if (isLoading || !greetings) {
-    return <div className="h-96 flex items-center justify-center animate-pulse text-gray-400">Loading...</div>;
-  }
-
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-14 mb-8 flex flex-col items-center text-center">
       
@@ -30,14 +22,14 @@ export default function Sub1Greetings() {
         <Quote className="absolute top-6 left-6 text-gray-200 w-16 h-16 transform -rotate-12" />
         <div className="relative z-10">
           <p className="text-xl md:text-2xl font-light text-gray-800 leading-relaxed break-keep">
-            "{greetings.quote}"
+            "{dummyGreetings.quote}"
           </p>
         </div>
       </div>
 
       {/* Main Letter Body */}
       <div className="space-y-6 text-gray-700 text-lg leading-loose font-light break-keep max-w-3xl">
-        {greetings.paragraphs.map((para: string, index: number) => (
+        {dummyGreetings.paragraphs.map((para: string, index: number) => (
           <p key={index}>{para}</p>
         ))}
       </div>
@@ -46,14 +38,12 @@ export default function Sub1Greetings() {
       <div className="mt-20 flex flex-col items-center">
         <p className="text-gray-500 mb-2">연세대학교 미래캠퍼스 창업지원단장</p>
         <div className="flex items-center gap-4">
-          <span className="text-2xl font-bold text-gray-900">{greetings.director}</span>
+          <span className="text-2xl font-bold text-gray-900">{dummyGreetings.director}</span>
           <span className="font-serif italic text-4xl text-gray-400 opacity-60 pointer-events-none select-none">
-            {greetings.signatureText}
+            {dummyGreetings.signatureText}
           </span>
         </div>
       </div>
-
-      <AdminContentEditor where="greetings" initialData={greetings} />
     </div>
   );
 }

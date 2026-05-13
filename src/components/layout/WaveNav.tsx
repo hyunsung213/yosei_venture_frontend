@@ -9,7 +9,6 @@ const baseTabs = [
   { name: "팀 소개", href: "/wave/teams-info" },
   { name: "공지사항", href: "/wave/notice" },
   { name: "Q&A", href: "/wave/qa" },
-  { name: "팀 관리", href: "/wave/team" },
 ];
 
 const waveTabs = [

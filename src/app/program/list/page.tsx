@@ -3,14 +3,21 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, Loader2, ServerOff, Calendar, PlusCircle, X } from 'lucide-react';
 import { getAllPrograms } from '@/api/get';
 import { getImage } from '@/utils/imageUtils';
 import { useAuth } from "@/contexts/AuthContext";
-import { ProgramSimple } from '@/interface/interface';
+import { ProgramSimple, PaginationInfo } from '@/interface/interface';
+import Pagination from '@/components/common/Pagination';
 
 export default function ProgramListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = parseInt(searchParams.get('page') || '1', 10);
+
   const [programs, setPrograms] = useState<ProgramSimple[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { role } = useAuth();
@@ -32,9 +39,13 @@ export default function ProgramListPage() {
     async function fetchPrograms() {
       setLoading(true);
       try {
-        const data = await getAllPrograms();
-        const list = data ?? [];
-        setPrograms(list);
+        const data = await getAllPrograms(page, 10);
+        if (data) {
+          setPrograms(data.items || []);
+          setPagination(data.pagination);
+        } else {
+          setPrograms([]);
+        }
       } catch (e) {
         console.error("Program 목록 로드 실패:", e);
         setError(true);
@@ -43,7 +54,11 @@ export default function ProgramListPage() {
       }
     }
     fetchPrograms();
-  }, []);
+  }, [page]);
+
+  const handlePageChange = (newPage: number) => {
+    router.push(`/program/list?page=${newPage}`);
+  };
 
   const formatDate = (d?: string | Date) => {
     if (!d) return "-";
@@ -101,7 +116,7 @@ export default function ProgramListPage() {
             const progId = prog.id ?? (prog as any).id ?? String(index);
             
             const imageUrl = (prog as any).poster;
-            const viewImage = imageUrl ? getImage(imageUrl) : '/board_dummy_1.jpg';
+            const viewImage = getImage(imageUrl);
 
             return (
               <Link
@@ -126,7 +141,6 @@ export default function ProgramListPage() {
                 </div>
 
                 <div className="p-6 md:p-8 flex flex-col justify-center flex-1 h-full overflow-hidden">
-                  <span className="text-xs font-bold text-yonsei-blue mb-3 block truncate">{prog.hashTags}</span>
                   <h2 className="text-lg md:text-2xl font-bold text-gray-900 leading-snug group-hover:text-yonsei-blue transition-colors mb-4 line-clamp-3">
                     {prog.title}
                   </h2>
@@ -140,6 +154,10 @@ export default function ProgramListPage() {
             );
           })}
         </div>
+      )}
+
+      {!loading && !error && pagination && (
+        <Pagination pagination={pagination} onPageChange={handlePageChange} />
       )}
     </div>
   );

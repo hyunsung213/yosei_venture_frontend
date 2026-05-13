@@ -25,8 +25,8 @@ export default function CalendarPage() {
     async function loadPrograms() {
       setLoading(true);
       try {
-        const data = await getAllPrograms();
-        setPrograms(data ?? []);
+        const data = await getAllPrograms(1, 100); // Fetch up to 100 programs for the calendar
+        setPrograms(data?.items ?? []);
       } catch (e) {
         console.error("Failed to load generic programs", e);
       } finally {
@@ -149,7 +149,12 @@ export default function CalendarPage() {
                   <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden pt-1 w-[calc(100%+16px)] -ml-2">
                     {dayPrograms.map((prog, idx) => {
                       const programId = prog.id || (prog as any).id || `idx-${idx}`;
-                      const colorClass = PASTEL_COLORS[(typeof programId === 'string' ? programId.charCodeAt(0) : idx) % PASTEL_COLORS.length];
+                      const programIdStr = String(programId);
+                      let hash = 0;
+                      for (let i = 0; i < programIdStr.length; i++) {
+                        hash = programIdStr.charCodeAt(i) + ((hash << 5) - hash);
+                      }
+                      const colorClass = PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length];
                       
                       const currentCell = new Date(year, month, day);
                       const tStart = new Date(prog.startDate); tStart.setHours(0,0,0,0);

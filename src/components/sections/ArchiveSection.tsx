@@ -2,60 +2,73 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ChevronRight, ExternalLink, Globe, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronRight as ChevronRightIcon, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Team, Notice, TeamSimple } from "@/interface/interface";
+import { Notice } from "@/interface/interface";
 import { getImage } from "@/utils/imageUtils";
-import { getAllTeams, getCommunityNotices, getWaveNotices } from "@/api/get";
-
-const typeLabels: Record<string, string> = {
-  innovative: "혁신창업",
-  lab1th: "LAB 1th",
-  lab2th: "LAB 2th",
-  local1th: "LOCAL 일반",
-  local2th: "LOCAL 창업체험형",
-};
+import { getAllPrograms, getCommunityNotices, getWaveNotices } from "@/api/get";
+import Image from "next/image";
 
 export default function ArchiveSection() {
   const [activeTab, setActiveTab] = useState<'wave' | 'community'>('wave');
-  const [teams, setTeams] = useState<TeamSimple[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
   const [waveNotices, setWaveNotices] = useState<Notice[]>([]);
   const [communityNotices, setCommunityNotices] = useState<Notice[]>([]);
-  const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
+  const [currentProgramIndex, setCurrentProgramIndex] = useState(0);
 
-  const nextTeam = useCallback(() => {
-    if (teams.length === 0) return;
-    setCurrentTeamIndex((prev) => (prev + 1) % teams.length);
-  }, [teams.length]);
+  const nextProgram = useCallback(() => {
+    if (programs.length === 0) return;
+    setCurrentProgramIndex((prev) => (prev + 1) % programs.length);
+  }, [programs.length]);
 
-  const prevTeam = useCallback(() => {
-    if (teams.length === 0) return;
-    setCurrentTeamIndex((prev) => (prev - 1 + teams.length) % teams.length);
-  }, [teams.length]);
+  const prevProgram = useCallback(() => {
+    if (programs.length === 0) return;
+    setCurrentProgramIndex((prev) => (prev - 1 + programs.length) % programs.length);
+  }, [programs.length]);
 
   useEffect(() => {
     async function fetchData() {
-      const allTeams = await getAllTeams();
-      if (allTeams) setTeams(allTeams);
+      // Fetch programs
+      try {
+        const result = await getAllPrograms(1, 20);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const rawData: any[] = result?.items ?? result ?? [];
+        const processed = rawData.map((item: any) => {
+          const endDate = new Date(item.endDate ?? item.end_date);
+          endDate.setHours(23, 59, 59, 999);
+          const diffTime = endDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return {
+            ...item,
+            diffDays,
+            dDayStr: diffDays === 0 ? "D-Day" : `D-${diffDays}`,
+          };
+        }).filter((item: any) => item.diffDays >= 0);
+        processed.sort((a, b) => a.diffDays - b.diffDays);
+        setPrograms(processed);
+      } catch {
+        setPrograms([]);
+      }
 
-      const waveNotices = await getWaveNotices();
-      if (waveNotices) setWaveNotices(waveNotices);
+      // Fetch notices
+      const wn = await getWaveNotices();
+      if (wn) setWaveNotices(Array.isArray(wn) ? wn : (wn as any).items ?? []);
 
-      const communityNotices = await getCommunityNotices();
-      if (communityNotices) setCommunityNotices(communityNotices);
-
+      const cn = await getCommunityNotices();
+      if (cn) setCommunityNotices(Array.isArray(cn) ? cn : (cn as any).items ?? []);
     }
     fetchData();
   }, []);
 
-  // 2s Auto-play timer
+  // Auto-play timer for programs
   useEffect(() => {
-    if (teams.length <= 1) return;
+    if (programs.length <= 1) return;
     const timer = setInterval(() => {
-      nextTeam();
-    }, 2000);
+      nextProgram();
+    }, 3000);
     return () => clearInterval(timer);
-  }, [teams.length, nextTeam]);
+  }, [programs.length, nextProgram]);
 
   const currentNotices = activeTab === 'wave' ? waveNotices : communityNotices;
 
@@ -71,21 +84,21 @@ export default function ArchiveSection() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           
-          {/* Left: Team Intro Carousel */}
+          {/* Left: Program Carousel */}
           <div className="flex flex-col h-[480px]">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2 tracking-tight">
-                창업 팀 <span className="text-yonsei-blue">소개</span>
+                진행중인 <span className="text-yonsei-blue">프로그램</span>
               </h2>
               <div className="flex gap-2">
                 <button 
-                  onClick={prevTeam}
+                  onClick={prevProgram}
                   className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95"
                 >
                   <ChevronLeft className="w-4 h-4 text-gray-600" />
                 </button>
                 <button 
-                  onClick={nextTeam}
+                  onClick={nextProgram}
                   className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95"
                 >
                   <ChevronRightIcon className="w-4 h-4 text-gray-600" />
@@ -98,43 +111,62 @@ export default function ArchiveSection() {
                 <motion.div 
                   className="flex w-full h-full p-0"
                   style={{ gap: '5%' }}
-                  animate={{ x: `${15 - currentTeamIndex * (70 + 5)}%` }}
+                  animate={{ x: `${15 - currentProgramIndex * (70 + 5)}%` }}
                   transition={{ type: "spring", stiffness: 200, damping: 25 }}
                 >
-                  {teams.length > 0 ? (
-                    teams.map((team, idx) => (
+                  {programs.length > 0 ? (
+                    programs.map((program, idx) => (
                       <div 
-                        key={team.id}
-                        className={`relative flex-shrink-0 w-[70%] h-[90%] my-auto rounded-2xl overflow-hidden bg-white shadow-xl border border-gray-100 transition-all duration-500 ${idx === currentTeamIndex ? 'scale-100 opacity-100' : 'scale-95 opacity-40'}`}
+                        key={program.id ?? idx}
+                        className={`relative flex-shrink-0 w-[70%] h-[90%] my-auto rounded-2xl overflow-hidden bg-white shadow-xl border border-gray-100 transition-all duration-500 ${idx === currentProgramIndex ? 'scale-100 opacity-100' : 'scale-95 opacity-40'}`}
                       >
-                        <div className="h-[55%] w-full relative">
-                          <img 
-                            src={getImage(team.img) || ""} 
-                            alt={team.name} 
-                            className="object-cover w-full h-full"
+                        {/* Poster image */}
+                        <div className="h-[55%] w-full relative bg-gray-100">
+                          <Image
+                            src={getImage(program.poster_url ?? program.poster ?? program.image ?? "")}
+                            alt={program.title}
+                            fill
+                            className="object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                          <div className="absolute top-4 left-4 bg-yonsei-blue/90 backdrop-blur-md text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/20">
-                            {typeLabels[team.type] || team.type}
+                          {/* D-Day badge */}
+                          <div className="absolute top-4 left-4 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded shadow-md border border-red-700/50">
+                            {program.dDayStr}
                           </div>
                         </div>
-                        <div className="p-6 flex flex-col justify-center flex-1">
-                          <h4 className="text-xl font-black text-gray-900 mb-2 truncate">{team.name}</h4>
-                          <p className="text-gray-500 font-medium line-clamp-2 break-keep text-sm leading-relaxed">
-                            {team.describe || "팀에 대한 상세 설명이 아직 등록되지 않았습니다."}
-                          </p>
+                        <div className="p-6 flex flex-col justify-between flex-1">
+                          <h4 className="text-lg font-black text-gray-900 mb-2 line-clamp-2 break-keep">{program.title}</h4>
+                          <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mt-auto">
+                            <Calendar className="w-3.5 h-3.5 text-yonsei-blue flex-shrink-0" />
+                            <span className="truncate">
+                              {(program.startDate ?? program.start_date ?? '').slice(5)} ~ {(program.endDate ?? program.end_date ?? '').slice(5)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="flex flex-col items-center justify-center w-full h-full text-gray-300 gap-3">
-                      <Globe className="w-10 h-10 opacity-20 animate-pulse" />
-                      <p className="font-black uppercase tracking-widest text-xs">No Teams Registered</p>
+                      <Calendar className="w-10 h-10 opacity-20 animate-pulse" />
+                      <p className="font-black uppercase tracking-widest text-xs">No Programs</p>
                     </div>
                   )}
                 </motion.div>
               </div>
             </div>
+
+            {/* Dot indicators */}
+            {programs.length > 0 && (
+              <div className="flex justify-center items-center mt-4 gap-1.5">
+                {programs.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentProgramIndex(idx)}
+                    className={`rounded-full transition-all duration-300 ${idx === currentProgramIndex ? 'w-6 h-2 bg-yonsei-blue' : 'w-2 h-2 bg-gray-300'}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Tabbed Notices */}

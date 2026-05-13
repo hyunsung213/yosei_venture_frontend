@@ -6,8 +6,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { getTeamByUserIdWithPlan } from "@/api/get";
 import { postUsage } from "@/api/post";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
+import { UsageType, UsageTypeKo, TeamType, Usage } from "@/interface/interface";
+import { validateUsageBudget, getMaxLimitText } from "@/utils/validation";
+
+const usageTypeMap: Record<UsageType, UsageTypeKo> = {
+  supplies: "사무용품",
+  promotion: "인쇄물 및 홍보물",
+  meetings: "회의비",
+  registration: "참가비",
+  materials: "재료비",
+  outsourcing: "용역비"
+};
 
 export default function WaveTeamUsageNewPage() {
   const { role, userId } = useAuth();
@@ -17,16 +28,19 @@ export default function WaveTeamUsageNewPage() {
   
   // Form states
   const [date, setDate] = useState("");
-  const [type, setType] = useState("");
+  const [type, setType] = useState<UsageType | "">("");
   const [useFor, setUseFor] = useState("");
   const [cost, setCost] = useState(0);
   const [note, setNote] = useState("");
+  const [beforeFile, setBeforeFile] = useState<File | null>(null);
 
   const [errorPrompt, setErrorPrompt] = useState("");
 
   const [teamId, setTeamId] = useState("");
   const [planId, setPlanId] = useState("");
   const [teamBalance, setTeamBalance] = useState(0);
+  const [teamType, setTeamType] = useState<TeamType | undefined>(undefined);
+  const [usages, setUsages] = useState<Usage[]>([]);
 
   React.useEffect(() => {
     const loadTeam = async () => {
@@ -36,6 +50,8 @@ export default function WaveTeamUsageNewPage() {
           setTeamId(teamData.id);
           setTeamBalance(teamData.balance || 0);
           if (teamData.plan) setPlanId(teamData.plan.id);
+          setTeamType(teamData.type);
+          setUsages(teamData.usages || []);
         }
       }
     };
@@ -44,24 +60,61 @@ export default function WaveTeamUsageNewPage() {
     }
   }, [userId, role]);
 
+  const currentAccumulatedCost = React.useMemo(() => {
+    if (!type) return 0;
+    return usages
+      .filter((u) => u.type === type)
+      .reduce((acc, curr) => acc + (Number(curr.cost) || 0), 0);
+  }, [usages, type]);
+
+  const limitText = React.useMemo(() => {
+    if (!type) return "";
+    return getMaxLimitText(type as UsageType, teamType, teamBalance, currentAccumulatedCost);
+  }, [type, teamType, teamBalance, currentAccumulatedCost]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!type) {
+      setErrorPrompt("분류를 선택해주세요.");
+      return;
+    }
+
     setIsSaving(true);
     setErrorPrompt("");
 
-    const newData = {
-      teamId,
-      planId,
-      date,
-      type,
-      for: useFor,
-      cost,
-      note,
-      status: 'pending',
-      step: 'tentative'
-    };
+    const accumulatedCost = usages
+      .filter((u) => u.type === type)
+      .reduce((acc, curr) => acc + (Number(curr.cost) || 0), 0);
 
-    const res = await postUsage(newData);
+    const validation = validateUsageBudget(
+      type as UsageType,
+      cost,
+      teamType,
+      teamBalance,
+      accumulatedCost
+    );
+
+    if (!validation.isValid) {
+      setErrorPrompt(validation.message);
+      setIsSaving(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("teamId", teamId);
+    formData.append("planId", planId);
+    formData.append("date", date);
+    formData.append("type", type);
+    formData.append("for", useFor);
+    formData.append("cost", String(cost));
+    formData.append("note", note);
+    formData.append("status", 'pending');
+    formData.append("step", 'request');
+    if (beforeFile) {
+      formData.append("beforeFile", beforeFile);
+    }
+
+    const res = await postUsage(formData);
     setIsSaving(false);
 
     if (res.success) {
@@ -103,14 +156,17 @@ export default function WaveTeamUsageNewPage() {
 
               <div>
                 <label className="block text-sm font-extrabold text-gray-700 mb-2">분류 (Type)</label>
-                <input
-                  type="text"
+                <select
                   required
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  placeholder="예: 회의비, 도서구입비"
-                  className="w-full border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-yonsei-blue/50 outline-none"
-                />
+                  onChange={(e) => setType(e.target.value as UsageType)}
+                  className="w-full border border-gray-200 py-3 px-4 rounded-xl focus:ring-2 focus:ring-yonsei-blue/50 outline-none bg-white text-gray-700"
+                >
+                  <option value="" disabled>분류를 선택해주세요</option>
+                  {Object.entries(usageTypeMap).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="md:col-span-2">
@@ -141,6 +197,29 @@ export default function WaveTeamUsageNewPage() {
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">원</span>
                 </div>
+                {limitText && (
+                  <p className="mt-2 text-xs font-bold text-gray-400">{limitText}</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-extrabold text-gray-700 mb-2">증빙 자료 업로드 (신청 시)</label>
+                <div className="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 hover:border-yonsei-blue/50 transition-colors bg-gray-50/30 group">
+                  <input
+                    type="file"
+                    onChange={(e) => setBeforeFile(e.target.files?.[0] || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="p-3 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform">
+                      <Upload className="w-6 h-6 text-yonsei-blue" />
+                    </div>
+                    <p className="text-sm font-bold text-gray-600">
+                      {beforeFile ? beforeFile.name : "클릭하거나 파일을 여기로 끌어다 놓으세요"}
+                    </p>
+                    <p className="text-xs text-gray-400 font-medium">PNG, JPG, PDF (최대 10MB)</p>
+                  </div>
+                </div>
               </div>
 
               <div className="md:col-span-2">
@@ -168,7 +247,7 @@ export default function WaveTeamUsageNewPage() {
                 className="w-full md:w-auto px-10 py-4 rounded-xl font-bold text-white bg-yonsei-blue hover:bg-blue-800 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
               >
                 <Save className="w-5 h-5" />
-                {isSaving ? "등록 중..." : "새 내역 추가"}
+                {isSaving ? "요청 중..." : "요청하기"}
               </button>
             </div>
           </form>

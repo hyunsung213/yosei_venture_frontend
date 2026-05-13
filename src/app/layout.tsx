@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import GlobalImageErrorFallback from "@/components/common/GlobalImageErrorFallback";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,9 +25,11 @@ export default function RootLayout({
     <html
       lang="ko"
       className={`${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
+          <GlobalImageErrorFallback />
           <Header />
           {children}
           <Footer />

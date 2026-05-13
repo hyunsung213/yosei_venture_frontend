@@ -1,11 +1,20 @@
-import { Etc, News, Notice, Place, Program, ProgramSimple, Qa, Team, TeamSimple, TeamWithPlan, TeamWithPlanStatus, UserSoSimple } from "@/interface/interface";
+import { Etc, News, Notice, Place, Program, ProgramSimple, Qa, Team, TeamSimple, TeamWithPlan, TeamWithPlanStatus, UserSimple, UserSoSimple, PaginatedResponse, UsageDetail } from "@/interface/interface";
 import apiClient from "./api";
 
-// 프로그램 조회 //
-export async function getAllPrograms() {
+// 사용 내역 상세 조회 //
+export async function getUsageById(usageId: string) {
   try {
-    const response =
-      await apiClient.get<ProgramSimple[]>(`/program`);
+    const response = await apiClient.get<UsageDetail>(`/usage/${usageId}`);
+    return response.data;
+  } catch (error) {
+    console.log(`Usage ID ${usageId}을 가져오는데 실패했습니다!: `, error);
+  }
+}
+
+// 프로그램 조회 //
+export async function getAllPrograms(page: number = 1, limit: number = 10) {
+  try {
+    const response = await apiClient.get('/program', { params: { page, limit } });
     return response.data;
   } catch (error) {
     console.log("모든 Program을 가져오는데 실패했습니다!: ", error);
@@ -40,20 +49,21 @@ export async function getAllPlaces() {
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 // 공지사항 조회 //
-export async function getWaveNotices() {
+export async function getWaveNotices(page: number = 1, limit: number = 10) {
   try {
-    const response = await apiClient.get<Notice[]>(`/notice/for-wave`);
+    const response = await apiClient.get('/notice', { params: { isWave: true, page, limit } });
     return response.data;
   } catch (error) {
-    console.log("모든 Wave Notice를 가져오는데 실패했습니다!: ", error);
+    console.log("Wave Notice를 가져오는데 실패했습니다!: ", error);
   }
 }
-export async function getCommunityNotices() {
+
+export async function getCommunityNotices(page: number = 1, limit: number = 10) {
   try {
-    const response = await apiClient.get<Notice[]>(`/notice/for-community`);
+    const response = await apiClient.get('/notice', { params: { isWave: false, page, limit } });
     return response.data;
   } catch (error) {
-    console.log("모든 Community Notice를 가져오는데 실패했습니다!: ", error);
+    console.log("Community Notice를 가져오는데 실패했습니다!: ", error);
   }
 }
 
@@ -69,9 +79,9 @@ export async function getNoticeById(noticeId: string) {
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 // 뉴스 조회 //
-export async function getAllNews() {
+export async function getAllNews(page: number = 1, limit: number = 10) {
   try {
-    const response = await apiClient.get<News[]>(`/news`);
+    const response = await apiClient.get('/news', { params: { page, limit } });
     return response.data;
   } catch (error) {
     console.log("모든 News를 가져오는데 실패했습니다!: ", error);
@@ -111,21 +121,21 @@ export async function getEtcByWhere(where: string) {
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 // Q&A 조회 //
-export async function getWaveQAs() {
+export async function getWaveQAs(page: number = 1, limit: number = 10) {
   try {
-    const response = await apiClient.get<Qa[]>(`/qa/for-wave`);
+    const response = await apiClient.get('/qa', { params: { isWave: true, page, limit } });
     return response.data;
   } catch (error) {
-    console.log("모든 Wave QA를 가져오는데 실패했습니다!: ", error);
+    console.log("Wave QA를 가져오는데 실패했습니다!: ", error);
   }
 }
 
-export async function getCommunityQAs() {
+export async function getCommunityQAs(page: number = 1, limit: number = 10) {
   try {
-    const response = await apiClient.get<Qa[]>(`/qa/for-community`);
+    const response = await apiClient.get('/qa', { params: { isWave: false, page, limit } });
     return response.data;
   } catch (error) {
-    console.log("모든 Community QA를 가져오는데 실패했습니다!: ", error);
+    console.log("Community QA를 가져오는데 실패했습니다!: ", error);
   }
 }
 
@@ -234,7 +244,7 @@ export async function getRegistrationsByProgramId(programId: string) {
 // 사용자 관리
 export async function getAllUsers() {
   try {
-    const response = await apiClient.get<UserSoSimple[]>(`/user/all`);
+    const response = await apiClient.get<UserSimple[]>(`/user/all`);
     return response.data;
   } catch (error) {
     console.log("모든 사용자를 가져오는데 실패했습니다!: ", error);
