@@ -11,7 +11,9 @@ import { INews, News, PaginationInfo } from '@/interface/interface';
 import { getImage } from '@/utils/imageUtils';
 import Pagination from '@/components/common/Pagination';
 
-export default function PressPage() {
+import { Suspense } from 'react';
+
+function NewsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -225,5 +227,18 @@ export default function PressPage() {
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       )}
     </div>
+  );
+}
+
+export default function PressPage() {
+  return (
+    <Suspense fallback={
+      <div className="py-20 flex flex-col items-center justify-center gap-4 text-gray-400">
+        <Loader2 className="w-10 h-10 animate-spin text-yonsei-blue" />
+        <p className="font-bold">뉴스를 불러오는 중...</p>
+      </div>
+    }>
+      <NewsContent />
+    </Suspense>
   );
 }

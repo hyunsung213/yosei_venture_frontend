@@ -10,7 +10,9 @@ import { Notice, PaginationInfo } from '@/interface/interface';
 import { getCommunityNotices } from '@/api/get';
 import Pagination from '@/components/common/Pagination';
 
-export default function NoticePage() {
+import { Suspense } from 'react';
+
+function NoticeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -217,5 +219,18 @@ export default function NoticePage() {
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       )}
     </div>
+  );
+}
+
+export default function NoticePage() {
+  return (
+    <Suspense fallback={
+      <div className="py-20 flex flex-col items-center justify-center gap-4 text-gray-400">
+        <Loader2 className="w-10 h-10 animate-spin text-yonsei-blue" />
+        <p className="font-bold">공지사항을 불러오는 중...</p>
+      </div>
+    }>
+      <NoticeContent />
+    </Suspense>
   );
 }

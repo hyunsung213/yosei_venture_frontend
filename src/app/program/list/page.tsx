@@ -11,7 +11,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ProgramSimple, PaginationInfo } from '@/interface/interface';
 import Pagination from '@/components/common/Pagination';
 
-export default function ProgramListPage() {
+import { Suspense } from 'react';
+
+function ProgramListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -160,5 +162,18 @@ export default function ProgramListPage() {
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       )}
     </div>
+  );
+}
+
+export default function ProgramListPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-400">
+        <Loader2 className="w-10 h-10 animate-spin text-yonsei-blue" />
+        <p className="font-bold">프로그램 목록을 불러오는 중...</p>
+      </div>
+    }>
+      <ProgramListContent />
+    </Suspense>
   );
 }

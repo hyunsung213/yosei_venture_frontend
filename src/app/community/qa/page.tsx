@@ -10,7 +10,9 @@ import { useEffect, useState } from 'react';
 import { getCommunityQAs, getQAById } from '@/api/get';
 import Link from 'next/link';
 
-export default function QAPage() {
+import { Suspense } from 'react';
+
+function QAContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -256,5 +258,18 @@ export default function QAPage() {
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       )}
     </div>
+  );
+}
+
+export default function QAPage() {
+  return (
+    <Suspense fallback={
+      <div className="py-20 text-center text-gray-400 font-bold flex flex-col items-center gap-2">
+        <Loader2 className="w-8 h-8 animate-spin text-yonsei-blue" />
+        <p>로딩 중...</p>
+      </div>
+    }>
+      <QAContent />
+    </Suspense>
   );
 }
