@@ -11,7 +11,9 @@ import { ShieldAlert } from 'lucide-react';
 import { getQAById, getWaveQAs } from '@/api/get';
 import Link from 'next/link';
 
-export default function WaveQAPage() {
+import { Suspense } from 'react';
+
+function WaveQAContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -250,5 +252,18 @@ export default function WaveQAPage() {
         <Pagination pagination={pagination} onPageChange={handlePageChange} />
       )}
     </div>
+  );
+}
+
+export default function WaveQAPage() {
+  return (
+    <Suspense fallback={
+      <div className="py-20 text-center text-gray-400 font-bold flex flex-col items-center gap-2">
+        <Loader2 className="w-8 h-8 animate-spin text-yonsei-blue" />
+        <p>로딩 중...</p>
+      </div>
+    }>
+      <WaveQAContent />
+    </Suspense>
   );
 }
